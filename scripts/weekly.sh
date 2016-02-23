@@ -16,6 +16,6 @@ do
       send_email "$NOW Starting build of $i" "Build started for $i, temp log is on $TEMPLOG"
 			[ -f "build.sh" ] && ./build.sh  1>&2 > $TEMPLOG
       cp -rfv $TEMPLOG "/vagrant/logs/$NOW/$i.$(date +%s).log"
-			send_email "$NOW Build for $i" "$(cat $TEMPLOG)"
+			send_email "$NOW Build finished for $i" "Log is available at: /vagrant/logs/$NOW"
 	popd
 done
