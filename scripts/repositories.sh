@@ -60,18 +60,24 @@ rsync -avPz -e "ssh -q -p $PORT" $ARTIFACTS/* $SERVER
 
 }
 
+vagrant_cleanup() {
+	#cleanup log and artifacts
+	rm -rf /vagrant/artifacts/*
+	rm -rf /vagrant/logs/*
+}
+
 deploy_all() {
 	local REPO="${1}"
 
 	[ -d "/vagrant/artifacts/${REPO}/" ] || mkdir -p /vagrant/artifacts/${REPO}/
 
 	# Local deploy:
-	cp -rfv /vagrant/repositories/${REPO}/entropy_artifacts/* /vagrant/artifacts/${REPO}/
+	rsync -arvP --delete /vagrant/repositories/${REPO}/entropy_artifacts/* /vagrant/artifacts/${REPO}/
+	chmod -R 444 /vagrant/artifacts/${REPO} # At least should be readable
 
 	# Remote deploy:
 	deploy "/vagrant/repositories/${REPO}/entropy_artifacts" "$DEPLOY_SERVER" "$DEPLOY_PORT"
 	deploy "/vagrant/logs/" "$DEPLOY_SERVER_BUILDLOGS" "$DEPLOY_PORT"
-
 
 
 }
