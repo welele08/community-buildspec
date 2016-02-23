@@ -60,6 +60,17 @@ rsync -avPz -e "ssh -q -p $PORT" $ARTIFACTS/* $SERVER
 
 }
 
+systen_upgrade() {
+	# upgrade
+	rsync -av -H -A -X --delete-during "rsync://rsync.at.gentoo.org/gentoo-portage/licenses/" "/usr/portage/licenses/"
+	ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
+	equo up
+	equo u
+
+	echo -5 | equo conf update
+	equo cleanup --quick
+}
+
 vagrant_cleanup() {
 	#cleanup log and artifacts
 	rm -rf /vagrant/artifacts/*
@@ -72,8 +83,8 @@ deploy_all() {
 	[ -d "/vagrant/artifacts/${REPO}/" ] || mkdir -p /vagrant/artifacts/${REPO}/
 
 	# Local deploy:
-	rsync -arvP --delete /vagrant/repositories/${REPO}/entropy_artifacts/* /vagrant/artifacts/${REPO}/
-	chmod -R 444 /vagrant/artifacts/${REPO} # At least should be readable
+	#rsync -arvP --delete /vagrant/repositories/${REPO}/entropy_artifacts/* /vagrant/artifacts/${REPO}/
+	#chmod -R 444 /vagrant/artifacts/${REPO} # At least should be readable
 
 	# Remote deploy:
 	deploy "/vagrant/repositories/${REPO}/entropy_artifacts" "$DEPLOY_SERVER" "$DEPLOY_PORT"

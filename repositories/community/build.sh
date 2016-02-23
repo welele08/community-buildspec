@@ -3,12 +3,12 @@ set -e
 
 . /vagrant/scripts/repositories.sh
 
-# Build Pantheon repository
+# Build community repository
 sabayon-buildpackages app-text/cherrytree \
-                      --layman and3k-sunrise 
+                      --layman and3k-sunrise
 
 # Create repository
-REPOSITORY_NAME="community" REPOSITORY_DESCRIPTION="Community Repository"  sabayon-createrepo
+REPOSITORY_NAME="community" REPOSITORY_DESCRIPTION="Community Repository"  OUTPUT_DIR="/vagrant/artifacts/community" sabayon-createrepo
 
-# Deploy repository "pantheon" locally and remotely (if configured)
-deploy_all "community"
+# Deploy repository "community" locally and remotely (if configured)
+#deploy_all "community"

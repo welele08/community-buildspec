@@ -2,15 +2,22 @@
 
 . /vagrant/scripts/repositories.sh
 
-# upgrade
-rsync -av -H -A -X --delete-during "rsync://rsync.at.gentoo.org/gentoo-portage/licenses/" "/usr/portage/licenses/"
-ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
-equo up
-equo u
+system_upgrade
 
-echo -5 | equo conf update
+## cleanup
 
-#cleanup
+for i in "${REPOSITORIES[@]}"
+do
+	pushd /vagrant/repositories/$i
+  send_email "$NOW Clean of $i" "Build started for $i, temp log is on $TEMPLOG"
+  [ -f "clean.sh" ] && ./clean.sh  1>&2 > $TEMPLOG
+  mytime=$(date +%s)
+  cp -rfv $TEMPLOG "/vagrant/logs/$NOW/$i-clean.$mytime.log"
+  chmod 444 /vagrant/logs/$NOW/$i-clean.$mytime.log
+  send_email "$NOW Clean finished for $i" "Log is available at: /vagrant/logs/$NOW/$i-clean.$mytime.log"
+	popd
+done
+
 
 #vagrant_cleanup
 
@@ -18,5 +25,3 @@ echo -5 | equo conf update
 systemctl stop docker
 rm -rfv /var/lib/docker
 systemctl start docker
-
-equo cleanup --quick
