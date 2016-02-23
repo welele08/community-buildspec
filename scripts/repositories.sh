@@ -56,7 +56,7 @@ local PORT="${3}"
 [ -z "$ARTIFACTS" ] && exit 0
 [ -z "$SERVER" ] && exit 0
 [ -z "$PORT" ] && exit 0
-rsync -avPz -e "ssh -q -p $PORT" $ARTIFACTS/* $SERVER
+rsync -avPz --delete -e "ssh -q -p $PORT" $ARTIFACTS/* $SERVER
 
 }
 
