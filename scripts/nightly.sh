@@ -4,10 +4,7 @@
 
 . /vagrant/scripts/repositories.sh
 
-pushd /vagrant
-        git fetch --all
-        git reset --hard master origin
-popd
+update_vagrant_repo
 
 for i in "${REPOSITORIES[@]}"
 do

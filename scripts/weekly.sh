@@ -7,10 +7,8 @@ export DEPLOY_SERVER
 export DEPLOY_PORT
 
 mkdir -p /vagrant/logs/$NOW
-pushd /vagrant
-        git fetch --all
-        git reset --hard master origin
-popd
+
+update_vagrant_repo
 
 for i in "${REPOSITORIES[@]}"
 do

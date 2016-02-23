@@ -22,6 +22,13 @@ trap cleanup EXIT
 
 die() { echo "$@" 1>&2 ; exit 1; }
 
+update_vagrant_repo() {
+	pushd /vagrant
+	        git fetch --all
+	        git reset --hard origin/master
+	popd
+}
+
 send_email() {
 
 local SUBJECT="${1:-Report}"
