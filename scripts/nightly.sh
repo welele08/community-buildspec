@@ -6,9 +6,11 @@
 
 update_vagrant_repo
 
-for i in "${REPOSITORIES[@]}"
-do
-  pushd /vagrant/repositories/$i
-			#XXX: libchecks here
-	popd
-done
+/vagrant/scripts/weekly.sh
+#
+# for i in "${REPOSITORIES[@]}"
+# do
+#   pushd /vagrant/repositories/$i
+# 			#XXX: libchecks here
+# 	popd
+# done
