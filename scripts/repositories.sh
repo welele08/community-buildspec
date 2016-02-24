@@ -94,3 +94,29 @@ deploy_all() {
 
 
 }
+
+build_all() {
+	local BUILD_ARGS="${1}"
+	[ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
+
+	#Build repository
+	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
+
+	# Creating our permanent binhost
+	cp -rf "/vagrant/artifacts/${REPOSITORY_NAME}-binhost/*" $TEMPDIR
+
+	# Create repository
+	PORTAGE_ARTIFACTS="/vagrant/artifacts/${REPOSITORY_NAME}-binhost" OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+
+
+	rm -rf $TEMPDIR/*
+
+	# Deploy repository inside "repositories"
+	#deploy_all "${REPOSITORY_NAME}"
+
+}
+
+build_clean() {
+	[ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
+	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-cleanup
+}

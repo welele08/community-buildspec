@@ -3,5 +3,6 @@ set -e
 
 . /vagrant/scripts/repositories.sh
 
-# Create repository
-REPOSITORY_NAME="kernel-dracut" OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-cleanup
+export REPOSITORY_NAME="kernel-dracut"
+
+build_clean
