@@ -7,6 +7,8 @@ MAILGUN_API_KEY="${MAILGUN_API_KEY}"
 MAILGUN_DOMAIN_NAME="${MAILGUN_DOMAIN_NAME}"
 MAILGUN_FROM="${MAILGUN_FROM:-Excited User <mailgun\@$MAILGUN_DOMAIN_NAME\>}"
 TEMPLOG=$(mktemp)
+TEMPDIR=$(mktemp -d)
+
 NOW=$(date +"%Y-%m-%d")
 DOCKER_PULL_IMAGE=1
 
@@ -15,6 +17,7 @@ DOCKER_PULL_IMAGE=1
 # deletes the temp directory
 function cleanup {
   rm -rf "$TEMPLOG"
+	rm -rf "$TEMPDIR"
 }
 
 # register the cleanup function to be called on the EXIT signal
