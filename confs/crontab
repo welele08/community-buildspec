@@ -1,3 +1,3 @@
-1 0 * * * /vagrant/scripts/nightly.sh
-0 0 1 * * /vagrant/scripts/monthly.sh
-5 8 * * 6 /vagrant/scripts/weekly.sh
+1 0 * * * root /vagrant/scripts/nightly.sh
+0 0 1 * * root /vagrant/scripts/monthly.sh
+5 8 * * 6 root /vagrant/scripts/weekly.sh
