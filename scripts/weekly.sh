@@ -16,7 +16,7 @@ do
       send_email "[$i] $NOW Build" "Build started for $i at $NOW, temp log is on $TEMPLOG"
 			[ -f "build.sh" ] && ./build.sh  1>&2 > $TEMPLOG
       mytime=$(date +%s)
-      cp -rfv $TEMPLOG "/vagrant/logs/$NOW/$i.$mytime.log"
+      ansifilter $TEMPLOG > "/vagrant/logs/$NOW/$i.$mytime.log"
       chmod 444 /vagrant/logs/$NOW/$i.$mytime.log
 			send_email "[$i] $NOW Build" "Finished, log is available at: /vagrant/logs/$NOW/$i.$mytime.log"
 	popd

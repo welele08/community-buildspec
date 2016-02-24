@@ -16,7 +16,7 @@ Vagrant.configure(2) do |config|
 
     equo up && sudo equo u
     echo -5 | equo conf update
-    equo i docker sabayon-devkit vixie-cron git wget curl
+    equo i docker sabayon-devkit vixie-cron git wget curl ansifilter
 
     systemctl enable docker
     systemctl start docker
