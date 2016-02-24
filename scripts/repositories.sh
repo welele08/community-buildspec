@@ -8,9 +8,8 @@ MAILGUN_DOMAIN_NAME="${MAILGUN_DOMAIN_NAME}"
 MAILGUN_FROM="${MAILGUN_FROM:-Excited User <mailgun\@$MAILGUN_DOMAIN_NAME\>}"
 TEMPLOG=$(mktemp)
 TEMPDIR=$(mktemp -d)
-
 NOW=$(date +"%Y-%m-%d")
-DOCKER_PULL_IMAGE=1
+export DOCKER_OPTS="-t --rm"
 
 [ -e /vagrant/confs/env ] && . /vagrant/confs/env
 
