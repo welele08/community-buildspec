@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-REPOSITORIES=( $(find /vagrant/repositories -maxdepth 1 -type d -printf '%P\n') )
+REPOSITORIES=( $(find /vagrant/repositories -maxdepth 1 -type d -printf '%P\n' | grep -v '^\.') )
 EMAIL_NOTIFICATIONS="${EMAIL_NOTIFICATIONS:-mudler@sabayon.org}"
 MAILGUN_API_KEY="${MAILGUN_API_KEY}"
 MAILGUN_DOMAIN_NAME="${MAILGUN_DOMAIN_NAME}"
