@@ -9,7 +9,7 @@ export REPOSITORY_NAME="community"
 export REPOSITORY_DESCRIPTION="Community Repository"
 
 BUILD_ARGS=(
-    "app-text/cherrytree"
+    "app-text/cherrytree::and3k-sunrise"
     "--layman and3k-sunrise"
 )
 
