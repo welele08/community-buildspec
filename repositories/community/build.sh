@@ -10,7 +10,6 @@ export REPOSITORY_DESCRIPTION="Community Repository"
 
 BUILD_ARGS=(
     "app-text/cherrytree"
-    "app-misc/fluxgui"
     "--layman and3k-sunrise"
 )
 
