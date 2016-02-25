@@ -120,3 +120,8 @@ build_clean() {
 	[ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
 	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-cleanup
 }
+
+package_remove() {
+	[ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
+	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-remove "$@"
+}
