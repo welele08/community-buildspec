@@ -12,8 +12,9 @@ BUILD_ARGS=(
     "sys-kernel/linux-sabayon"
     "x11-drivers/nvidia-drivers::sabayon-distro"
     "x11-drivers/nvidia-drivers::sabayon-distro"
-    "x11-drivers/ati-drivers::sabayon-distro"
     "x11-drivers/xf86-video-virtualbox"
 )
+#    "x11-drivers/ati-drivers::sabayon-distro", leaving it behind for now. package download is restricted
+
 
 build_all "${BUILD_ARGS[@]}"
