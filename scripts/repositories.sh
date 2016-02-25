@@ -96,7 +96,7 @@ deploy_all() {
 }
 
 build_all() {
-	local BUILD_ARGS="${1}"
+	local BUILD_ARGS="$@"
 	[ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
 
 	#Build repository
@@ -112,7 +112,7 @@ build_all() {
 	rm -rf $TEMPDIR/*
 
 	# Deploy repository inside "repositories"
-	#deploy_all "${REPOSITORY_NAME}"
+	deploy_all "${REPOSITORY_NAME}"
 
 }
 
