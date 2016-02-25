@@ -103,10 +103,10 @@ build_all() {
 	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
 
 	# Creating our permanent binhost
-	cp -rf "/vagrant/artifacts/${REPOSITORY_NAME}-binhost/*" $TEMPDIR
+	cp -rf /vagrant/artifacts/${REPOSITORY_NAME}-binhost/* $TEMPDIR
 
 	# Create repository
-	PORTAGE_ARTIFACTS="/vagrant/artifacts/${REPOSITORY_NAME}-binhost" OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+	PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
 
 
 	rm -rf $TEMPDIR/*

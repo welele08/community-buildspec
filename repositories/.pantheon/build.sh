@@ -11,7 +11,8 @@ export REPOSITORY_DESCRIPTION="Pantheon Desktop Environment Community Repository
 BUILD_ARGS=(
       "pantheon-base/pantheon-shell"
       "--layman elementary"
-      "--equo x11-libs/gtk+:3"
+      "--install x11-libs/gtk+:3"
+      "--remove dev-libs/libdbusmenu"
  )
 
 build_all "${BUILD_ARGS[@]}"
