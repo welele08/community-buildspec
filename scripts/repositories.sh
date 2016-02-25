@@ -10,6 +10,15 @@ TEMPLOG=$(mktemp)
 TEMPDIR=$(mktemp -d)
 NOW=$(date +"%Y-%m-%d")
 export DOCKER_OPTS="-t --rm"
+export DOCKER_IMAGE="sabayon/builder-amd64"
+DOCKER_COMMIT_IMAGE=true
+
+if [ "$DOCKER_COMMIT_IMAGE" = true]; then
+	export DOCKER_OPTS="-t"
+else
+	export DOCKER_OPTS="-t --rm"
+fi
+
 
 [ -e /vagrant/confs/env ] && . /vagrant/confs/env
 
@@ -101,6 +110,13 @@ build_all() {
 
 	#Build repository
 	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
+
+	if [ "$DOCKER_COMMIT_IMAGE" = true]; then
+
+		CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
+		docker commit $CID $DOCKER_IMAGE
+
+	fi
 
 	# Creating our permanent binhost
 	cp -rf /vagrant/artifacts/${REPOSITORY_NAME}-binhost/* $TEMPDIR
