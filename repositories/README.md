@@ -31,6 +31,10 @@ as long as you create those files they are used:
 - make.conf:  it will replace the make.conf on the container with the provided one.
 
 
-## Package requests
+## Package requests or Repository requests
+
+This machine is meant for building packages for Sabayon Linux distribution. The server is supported by the University of Brescia and is available to all Trusted Users and Developers on request.
+
+It runs Arch Linux and packages are built in clean environments using sabayon-devkit.
 
 If you want to have compiled a package that you can find on [layman](https://gpo.zugaina.org/) or you have all the needed ebuilds, open a pull request or raise an issue, as resources allows, we will build and host it.
