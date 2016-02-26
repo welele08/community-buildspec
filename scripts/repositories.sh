@@ -14,7 +14,7 @@ export DOCKER_IMAGE="sabayon/builder-amd64"
 DOCKER_COMMIT_IMAGE=false
 CHECK_BUILD_DIFFS=true
 
-if [ "$DOCKER_COMMIT_IMAGE" = true]; then
+if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
 	export DOCKER_OPTS="-t"
 else
 	export DOCKER_OPTS="-t --rm"
@@ -112,13 +112,13 @@ build_all() {
 	local OLD_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
 	local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
 
- 	[ "$CHECK_BUILD_DIFFS" = true] && md5deep -j0 -r -s "/vagrant/artifacts/${REPOSITORY_NAME}-binhost" > $OLD_BINHOST_MD5
+ 	[ "$CHECK_BUILD_DIFFS" = true ] && md5deep -j0 -r -s "/vagrant/artifacts/${REPOSITORY_NAME}-binhost" > $OLD_BINHOST_MD5
 
 
 	#Build repository
 	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
 
-	if [ "$DOCKER_COMMIT_IMAGE" = true]; then
+	if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
 		CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
 		docker commit $CID $DOCKER_IMAGE
 
