@@ -9,7 +9,7 @@ TEMPLOG=$(mktemp)
 TEMPDIR=$(mktemp -d)
 NOW=$(date +"%Y-%m-%d")
 export DOCKER_OPTS="-t --rm"
-export DOCKER_IMAGE="sabayon/builder-amd64"
+
 DOCKER_COMMIT_IMAGE=false
 CHECK_BUILD_DIFFS=true
 VAGRANT_DIR="${VAGRANT_DIR:-/vagrant}"
@@ -124,7 +124,11 @@ build_all() {
 
 	if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
 		CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
-		docker commit $CID $DOCKER_IMAGE
+		if [ -n "$DOCKER_IMAGE" ]; then
+			docker commit $CID $DOCKER_IMAGE
+		else
+			docker commit $CID sabayon/builder-amd64
+		fi
 
 	fi
 
