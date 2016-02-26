@@ -11,7 +11,8 @@ TEMPDIR=$(mktemp -d)
 NOW=$(date +"%Y-%m-%d")
 export DOCKER_OPTS="-t --rm"
 export DOCKER_IMAGE="sabayon/builder-amd64"
-DOCKER_COMMIT_IMAGE=true
+DOCKER_COMMIT_IMAGE=false
+CHECK_BUILD_DIFFS=true
 
 if [ "$DOCKER_COMMIT_IMAGE" = true]; then
 	export DOCKER_OPTS="-t"
@@ -108,11 +109,16 @@ build_all() {
 	local BUILD_ARGS="$@"
 	[ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
 
+	local OLD_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
+	local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
+
+ 	[ "$CHECK_BUILD_DIFFS" = true] && md5deep -j0 -r -s "/vagrant/artifacts/${REPOSITORY_NAME}-binhost" > $OLD_BINHOST_MD5
+
+
 	#Build repository
 	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
 
 	if [ "$DOCKER_COMMIT_IMAGE" = true]; then
-
 		CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
 		docker commit $CID $DOCKER_IMAGE
 
@@ -121,11 +127,25 @@ build_all() {
 	# Creating our permanent binhost
 	cp -rf /vagrant/artifacts/${REPOSITORY_NAME}-binhost/* $TEMPDIR
 
-	# Create repository
-	PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+	# Checking diffs
+	if [ "$CHECK_BUILD_DIFFS" = true]; then
+		md5deep -j0 -r -s "/vagrant/artifacts/${REPOSITORY_NAME}-binhost" > $NEW_BINHOST_MD5
+
+		#if diffs are detected, regenerate the repository
+		if diff -q $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 >/dev/null ; then
+			echo "There was no changes, repository generation prevented"
+		else
+			PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+		fi
+
+	else
+		# Create repository
+		PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+	fi
 
 
 	rm -rf $TEMPDIR/*
+	[ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
 
 	# Deploy repository inside "repositories"
 	deploy_all "${REPOSITORY_NAME}"
