@@ -161,3 +161,19 @@ package_remove() {
 	[ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
 	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-remove "$@"
 }
+
+automated_build() {
+	local REPO_NAME=$1
+	export REPOSITORY_NAME=$REPO_NAME
+	[ -z "$REPO_NAME" ] && die "You called automated_build() blindly, without a reason, huh?"
+	pushd /vagrant/repositories/$REPO_NAME
+  ### XXX: Libchecks in there!
+      send_email "[$REPO_NAME] $NOW Build" "Build started for $REPO_NAME at $NOW, temp log is on $TEMPLOG"
+			[ -f "build.sh" ] && ./build.sh  1>&2 > $TEMPLOG
+      mytime=$(date +%s)
+      ansifilter $TEMPLOG > "/vagrant/logs/$NOW/$REPO_NAME.$mytime.log"
+      chmod 444 /vagrant/logs/$NOW/$REPO_NAME.$mytime.log
+			send_email "[$REPO_NAME] $NOW Build" "Finished, log is available at: /vagrant/logs/$NOW/$REPO_NAME.$mytime.log"
+	popd
+
+}
