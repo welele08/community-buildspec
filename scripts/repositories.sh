@@ -136,7 +136,7 @@ build_all() {
 	cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $TEMPDIR
 
 	# Checking diffs
-	if [ "$CHECK_BUILD_DIFFS" = true]; then
+	if [ "$CHECK_BUILD_DIFFS" = true ]; then
 		md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $NEW_BINHOST_MD5
 
 		#if diffs are detected, regenerate the repository
