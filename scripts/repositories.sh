@@ -1,7 +1,6 @@
 #!/bin/bash
 
 
-REPOSITORIES=( $(find /vagrant/repositories -maxdepth 1 -type d -printf '%P\n' | grep -v '^\.') )
 EMAIL_NOTIFICATIONS="${EMAIL_NOTIFICATIONS:-mudler@sabayon.org}"
 MAILGUN_API_KEY="${MAILGUN_API_KEY}"
 MAILGUN_DOMAIN_NAME="${MAILGUN_DOMAIN_NAME}"
@@ -13,6 +12,8 @@ export DOCKER_OPTS="-t --rm"
 export DOCKER_IMAGE="sabayon/builder-amd64"
 DOCKER_COMMIT_IMAGE=false
 CHECK_BUILD_DIFFS=true
+VAGRANT_DIR="${VAGRANT_DIR:-/vagrant}"
+REPOSITORIES=( $(find ${VAGRANT_DIR}/repositories -maxdepth 1 -type d -printf '%P\n' | grep -v '^\.') )
 
 if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
 	export DOCKER_OPTS="-t"
@@ -21,7 +22,7 @@ else
 fi
 
 
-[ -e /vagrant/confs/env ] && . /vagrant/confs/env
+[ -e ${VAGRANT_DIR}/confs/env ] && . ${VAGRANT_DIR}/confs/env
 
 # deletes the temp directory
 function cleanup {
@@ -35,7 +36,7 @@ trap cleanup EXIT
 die() { echo "$@" 1>&2 ; exit 1; }
 
 update_vagrant_repo() {
-	pushd /vagrant
+	pushd ${VAGRANT_DIR}
 	        git fetch --all
 	        git reset --hard origin/master
 	popd
@@ -85,38 +86,41 @@ systen_upgrade() {
 
 vagrant_cleanup() {
 	#cleanup log and artifacts
-	rm -rf /vagrant/artifacts/*
-	rm -rf /vagrant/logs/*
+	rm -rf ${VAGRANT_DIR}/artifacts/*
+	rm -rf ${VAGRANT_DIR}/logs/*
 }
 
 deploy_all() {
 	local REPO="${1}"
 
-	[ -d "/vagrant/artifacts/${REPO}/" ] || mkdir -p /vagrant/artifacts/${REPO}/
+	[ -d "${VAGRANT_DIR}/artifacts/${REPO}/" ] || mkdir -p ${VAGRANT_DIR}/artifacts/${REPO}/
 
 	# Local deploy:
-	#rsync -arvP --delete /vagrant/repositories/${REPO}/entropy_artifacts/* /vagrant/artifacts/${REPO}/
-	#chmod -R 444 /vagrant/artifacts/${REPO} # At least should be readable
+	#rsync -arvP --delete ${VAGRANT_DIR}/repositories/${REPO}/entropy_artifacts/* ${VAGRANT_DIR}/artifacts/${REPO}/
+	#chmod -R 444 ${VAGRANT_DIR}/artifacts/${REPO} # At least should be readable
 
 	# Remote deploy:
-	deploy "/vagrant/repositories/${REPO}/entropy_artifacts" "$DEPLOY_SERVER" "$DEPLOY_PORT"
-	deploy "/vagrant/logs/" "$DEPLOY_SERVER_BUILDLOGS" "$DEPLOY_PORT"
+	deploy "${VAGRANT_DIR}/repositories/${REPO}/entropy_artifacts" "$DEPLOY_SERVER" "$DEPLOY_PORT"
+	deploy "${VAGRANT_DIR}/logs/" "$DEPLOY_SERVER_BUILDLOGS" "$DEPLOY_PORT"
 
 
 }
 
 build_all() {
 	local BUILD_ARGS="$@"
-	[ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
+
+
+	[ -z "$REPOSITORY_NAME" ] && echo "warning: repository name (REPOSITORY_NAME) not defined, using your current working directory name"
+	REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename $(dirname $0))}"
 
 	local OLD_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
 	local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
 
- 	[ "$CHECK_BUILD_DIFFS" = true ] && md5deep -j0 -r -s "/vagrant/artifacts/${REPOSITORY_NAME}-binhost" > $OLD_BINHOST_MD5
+ 	[ "$CHECK_BUILD_DIFFS" = true ] && md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $OLD_BINHOST_MD5
 
 
 	#Build repository
-	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
+	OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
 
 	if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
 		CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
@@ -125,22 +129,22 @@ build_all() {
 	fi
 
 	# Creating our permanent binhost
-	cp -rf /vagrant/artifacts/${REPOSITORY_NAME}-binhost/* $TEMPDIR
+	cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $TEMPDIR
 
 	# Checking diffs
 	if [ "$CHECK_BUILD_DIFFS" = true]; then
-		md5deep -j0 -r -s "/vagrant/artifacts/${REPOSITORY_NAME}-binhost" > $NEW_BINHOST_MD5
+		md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $NEW_BINHOST_MD5
 
 		#if diffs are detected, regenerate the repository
 		if diff -q $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 >/dev/null ; then
 			echo "There was no changes, repository generation prevented"
 		else
-			PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+			PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
 		fi
 
 	else
 		# Create repository
-		PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+		PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
 	fi
 
 
@@ -154,26 +158,26 @@ build_all() {
 
 build_clean() {
 	[ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
-	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-cleanup
+	OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-cleanup
 }
 
 package_remove() {
 	[ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
-	OUTPUT_DIR="/vagrant/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-remove "$@"
+	OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-remove "$@"
 }
 
 automated_build() {
 	local REPO_NAME=$1
 	export REPOSITORY_NAME=$REPO_NAME
 	[ -z "$REPO_NAME" ] && die "You called automated_build() blindly, without a reason, huh?"
-	pushd /vagrant/repositories/$REPO_NAME
+	pushd ${VAGRANT_DIR}/repositories/$REPO_NAME
   ### XXX: Libchecks in there!
       send_email "[$REPO_NAME] $NOW Build" "Build started for $REPO_NAME at $NOW, temp log is on $TEMPLOG"
 			[ -f "build.sh" ] && ./build.sh  1>&2 > $TEMPLOG
       mytime=$(date +%s)
-      ansifilter $TEMPLOG > "/vagrant/logs/$NOW/$REPO_NAME.$mytime.log"
-      chmod 444 /vagrant/logs/$NOW/$REPO_NAME.$mytime.log
-			send_email "[$REPO_NAME] $NOW Build" "Finished, log is available at: /vagrant/logs/$NOW/$REPO_NAME.$mytime.log"
+      ansifilter $TEMPLOG > "${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log"
+      chmod 444 ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log
+			send_email "[$REPO_NAME] $NOW Build" "Finished, log is available at: ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log"
 	popd
 
 }
