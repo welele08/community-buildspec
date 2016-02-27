@@ -123,7 +123,7 @@ build_all() {
 		mv -f "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages" $PACKAGES_TMP
 		md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $OLD_BINHOST_MD5
 		mv -f $PACKAGES_TMP "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages"
-	do
+	fi
 
 	#Build repository
 	OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
