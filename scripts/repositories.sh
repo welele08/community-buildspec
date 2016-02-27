@@ -116,8 +116,14 @@ build_all() {
 	local OLD_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
 	local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
 
- 	[ "$CHECK_BUILD_DIFFS" = true ] && md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $OLD_BINHOST_MD5
-
+ 	if [ "$CHECK_BUILD_DIFFS" = true ]; then
+		local PACKAGES_TMP=$(mktemp -t "$(basename $0).XXXXXXXXXX")
+		#we need to get rid of Packages during md5sum, it contains TIMESTAMP that gets updated on each build (and thus changes, also if the compiled files remains the same)
+    #here we are trying to see if there are diffs between the bins, not buy the metas.
+		mv -f "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages" $PACKAGES_TMP
+		md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $OLD_BINHOST_MD5
+		mv -f $PACKAGES_TMP "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages"
+	do
 
 	#Build repository
 	OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
@@ -137,8 +143,10 @@ build_all() {
 
 	# Checking diffs
 	if [ "$CHECK_BUILD_DIFFS" = true ]; then
+		local PACKAGES_TMP=$(mktemp -t "$(basename $0).XXXXXXXXXX")
+		mv -f "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages" $PACKAGES_TMP
 		md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $NEW_BINHOST_MD5
-
+		mv -f $PACKAGES_TMP "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages"
 		#if diffs are detected, regenerate the repository
 		if diff -q $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 >/dev/null ; then
 			echo "There was no changes, repository generation prevented"
