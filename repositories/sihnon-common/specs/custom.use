@@ -1,1 +1,2 @@
+app-admin/puppet-agent puppetdb
 net-misc/openssh -hpn ldap
