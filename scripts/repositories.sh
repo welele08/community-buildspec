@@ -15,6 +15,9 @@ CHECK_BUILD_DIFFS=${DOCKER_COMMIT_IMAGE:-true}
 VAGRANT_DIR="${VAGRANT_DIR:-/vagrant}"
 REPOSITORIES=( $(find ${VAGRANT_DIR}/repositories -maxdepth 1 -type d -printf '%P\n' | grep -v '^\.') )
 
+export DISTFILES="${VAGRANT_DIR}/distfiles"
+export ENTROPY_DOWNLOADED_PACKAGES="${VAGRANT_DIR}/entropycache"
+
 if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
   export DOCKER_OPTS="-t"
 else
@@ -151,7 +154,7 @@ build_all() {
     else
       echo "${TO_INJECT[@]} packages needs to be injected"
       cp -rf "${TO_INJECT[@]}" $TEMPDIR/
-
+      
       PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
     fi
     
