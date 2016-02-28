@@ -18,13 +18,7 @@ REPOSITORIES=( $(find ${VAGRANT_DIR}/repositories -maxdepth 1 -type d -printf '%
 export DISTFILES="${VAGRANT_DIR}/distfiles"
 export ENTROPY_DOWNLOADED_PACKAGES="${VAGRANT_DIR}/entropycache"
 
-if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
-  export DOCKER_OPTS="-t"
-else
-  export DOCKER_OPTS="-t --rm"
-fi
-
-
+[ "$DOCKER_COMMIT_IMAGE" = true ]  && export DOCKER_OPTS="-t"
 [ -e ${VAGRANT_DIR}/confs/env ] && . ${VAGRANT_DIR}/confs/env
 
 # deletes the temp directory
@@ -114,7 +108,7 @@ build_all() {
   
   
   [ -z "$REPOSITORY_NAME" ] && echo "warning: repository name (REPOSITORY_NAME) not defined, using your current working directory name"
-  REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename $(dirname $0))}"
+  REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename $(pwd))}"
   
   local OLD_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
   local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
