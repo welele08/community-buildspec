@@ -14,6 +14,8 @@ BUILD_ARGS=(
     "dev-ruby/hiera-eyaml-gpg"
     "dev-ruby/puppet-syntax"
     "dev-ruby/puppet_forge"
+    "dev-util/jenkins-bin"
+    "net-analyzer/nagios-plugins"
     "net-misc/openssh"
     "--remove app-admin/puppet"
 )
