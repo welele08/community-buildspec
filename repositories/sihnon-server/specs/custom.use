@@ -1,1 +1,2 @@
+app-admin/puppetserver puppetdb
 www-apps/wordpress -akismet -themes vhosts

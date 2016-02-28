@@ -7,7 +7,7 @@ export DOCKER_PULL_IMAGE="${DOCKER_PULL_IMAGE:-1}"
 export REPOSITORY_DESCRIPTION="Sihnon server packages"
 
 BUILD_ARGS=(
-    "app-admin/librarian-puppet"
+    "app-admin/puppetserver"
     "www-apps/wordpress"
 )
 
