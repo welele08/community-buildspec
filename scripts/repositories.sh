@@ -32,6 +32,12 @@ trap cleanup EXIT
 
 die() { echo "$@" 1>&2 ; exit 1; }
 
+containsElement () {
+  local e
+  for e in "${@:2}"; do [[ "$e" == "$1" ]] && return 0; done
+  return 1
+}
+
 update_vagrant_repo() {
   pushd ${VAGRANT_DIR}
   git fetch --all
@@ -68,6 +74,11 @@ deploy() {
   [ -z "$PORT" ] && exit 0
   rsync -avPz --delete -e "ssh -q -p $PORT" $ARTIFACTS/* $SERVER
   
+}
+
+tbz2atom() {
+  local FILE_PATH="${1}"
+  echo $(echo "$FILE_PATH" | awk -F/ '{print $(NF-1) "/" $(NF)}' | sed 's:\.tbz2::g')
 }
 
 systen_upgrade() {
@@ -141,11 +152,18 @@ build_all() {
     mv -f "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages" $PACKAGES_TMP
     md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $NEW_BINHOST_MD5
     local TO_INJECT=($(diff -ru $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 | grep -v -e '^\+[\+]' | grep -e '^\+' | awk '{print $2}'))
+    local MAYBE_REMOVED=($(diff -ru $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 | grep -v -e '^\-[\-]' | grep -e '^\-' | awk '{print $2}'))
     mv -f $PACKAGES_TMP "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages"
     #if diffs are detected, regenerate the repository
     if diff -q $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 >/dev/null ; then
       echo "There was no changes, repository generation prevented"
     else
+      
+      for i in "${MAYBE_REMOVED[@]}"
+      do
+        containsElement "$i" "${TO_INJECT[@]}" && package_remove $(tbz2atom $i)
+      done
+      
       echo "${TO_INJECT[@]} packages needs to be injected"
       cp -rf "${TO_INJECT[@]}" $TEMPDIR/
       
