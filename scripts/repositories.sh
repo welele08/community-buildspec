@@ -43,25 +43,25 @@ update_vagrant_repo() {
 }
 
 send_email() {
-
+  
   local SUBJECT="${1:-Report}"
   local TEXT="${2:-Something went wrong}"
-
+  
   [ -z "$MAILGUN_API_KEY" ] && die "You have to set MAILGUN for error reporting"
   [ -z "$MAILGUN_DOMAIN_NAME" ] && die "You have to set MAILGUN for error reporting"
   [ -z "$MAILGUN_FROM" ] && die "You have to set MAILGUN for error reporting"
-
+  
   curl -s --user "api:${MAILGUN_API_KEY}" \
   https://api.mailgun.net/v3/"$MAILGUN_DOMAIN_NAME"/messages \
   -F from="$MAILGUN_FROM" \
   -F to="$EMAIL_NOTIFICATIONS" \
   -F subject="$SUBJECT" \
   -F text="$TEXT"
-
+  
 }
 
 deploy() {
-
+  
   local ARTIFACTS="${1}"
   local SERVER="${2}"
   local PORT="${3}"
@@ -70,7 +70,7 @@ deploy() {
   [ -z "$SERVER" ] && exit 0
   [ -z "$PORT" ] && exit 0
   rsync -avPz --delete -e "ssh -q -p $PORT" $ARTIFACTS/* $SERVER
-
+  
 }
 
 systen_upgrade() {
@@ -79,7 +79,7 @@ systen_upgrade() {
   ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
   equo up
   equo u
-
+  
   echo -5 | equo conf update
   equo cleanup --quick
 }
@@ -92,30 +92,30 @@ vagrant_cleanup() {
 
 deploy_all() {
   local REPO="${1}"
-
+  
   [ -d "${VAGRANT_DIR}/artifacts/${REPO}/" ] || mkdir -p ${VAGRANT_DIR}/artifacts/${REPO}/
-
+  
   # Local deploy:
   #rsync -arvP --delete ${VAGRANT_DIR}/repositories/${REPO}/entropy_artifacts/* ${VAGRANT_DIR}/artifacts/${REPO}/
   #chmod -R 444 ${VAGRANT_DIR}/artifacts/${REPO} # At least should be readable
-
+  
   # Remote deploy:
   deploy "${VAGRANT_DIR}/repositories/${REPO}/entropy_artifacts" "$DEPLOY_SERVER" "$DEPLOY_PORT"
   deploy "${VAGRANT_DIR}/logs/" "$DEPLOY_SERVER_BUILDLOGS" "$DEPLOY_PORT"
-
-
+  
+  
 }
 
 build_all() {
   local BUILD_ARGS="$@"
-
-
+  
+  
   [ -z "$REPOSITORY_NAME" ] && echo "warning: repository name (REPOSITORY_NAME) not defined, using your current working directory name"
   REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename $(dirname $0))}"
-
+  
   local OLD_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
   local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
-
+  
   if [ "$CHECK_BUILD_DIFFS" = true ]; then
     local PACKAGES_TMP=$(mktemp -t "$(basename $0).XXXXXXXXXX")
     #we need to get rid of Packages during md5sum, it contains TIMESTAMP that gets updated on each build (and thus changes, also if the compiled files remains the same)
@@ -124,10 +124,10 @@ build_all() {
     md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $OLD_BINHOST_MD5
     mv -f $PACKAGES_TMP "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages"
   fi
-
+  
   #Build repository
   OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
-
+  
   if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
     CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
     if [ -n "$DOCKER_IMAGE" ]; then
@@ -135,37 +135,41 @@ build_all() {
     else
       docker commit $CID sabayon/builder-amd64
     fi
-
+    
   fi
-
-  # Creating our permanent binhost
-  cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $TEMPDIR
-
+  
   # Checking diffs
   if [ "$CHECK_BUILD_DIFFS" = true ]; then
     local PACKAGES_TMP=$(mktemp -t "$(basename $0).XXXXXXXXXX")
     mv -f "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages" $PACKAGES_TMP
     md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $NEW_BINHOST_MD5
+    local TO_INJECT=($(diff -ru $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 | grep -v -e '^\+[\+]' | grep -e '^\+' | awk '{print $2}'))
     mv -f $PACKAGES_TMP "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages"
     #if diffs are detected, regenerate the repository
     if diff -q $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 >/dev/null ; then
       echo "There was no changes, repository generation prevented"
     else
+      echo "${TO_INJECT[@]} packages needs to be injected"
+      cp -rf "${TO_INJECT[@]}" $TEMPDIR/
+
       PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
     fi
-
+    
   else
+    # Creating our permanent binhost
+    cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $TEMPDIR
+    
     # Create repository
     PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
   fi
-
-
+  
+  
   rm -rf $TEMPDIR/*
   [ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
-
+  
   # Deploy repository inside "repositories"
   deploy_all "${REPOSITORY_NAME}"
-
+  
 }
 
 build_clean() {
@@ -191,5 +195,5 @@ automated_build() {
   chmod 444 ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log
   send_email "[$REPO_NAME] $NOW Build" "Finished, log is available at: ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log"
   popd
-
+  
 }
