@@ -16,5 +16,4 @@ do
   automated_build $i
 done
 
-# Generate repository list
-printf "%s\n" "${REPOSITORIES[@]}" > ${VAGRANT_DIR}/artifacts/AVAILABLE_REPOSITORIES
+generate_metadata
