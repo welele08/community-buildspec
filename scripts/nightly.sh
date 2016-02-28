@@ -15,3 +15,6 @@ for i in "${REPOSITORIES[@]}"
 do
   automated_build $i
 done
+
+# Generate repository list
+printf "%s\n" "${REPOSITORIES[@]}" > ${VAGRANT_DIR}/artifacts/AVAILABLE_REPOSITORIES
