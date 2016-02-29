@@ -18,6 +18,9 @@ BUILD_ARGS=(
     "net-analyzer/nagios-plugins"
     "net-misc/openssh"
     "--remove app-admin/puppet"
+    "--remove app-emulation/virt-what"
+    "--remove dev-ruby/facter"
+    "--remove dev-ruby/hiera"
 )
 
 build_all "${BUILD_ARGS[@]}"
