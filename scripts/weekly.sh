@@ -12,6 +12,8 @@ mkdir -p ${VAGRANT_DIR}/logs/$NOW
 chmod -R 444 ${VAGRANT_DIR}/logs/$NOW
 update_vagrant_repo
 
+[ -n "${DOCKER_IMAGE}" ] && docker rmi -f ${DOCKER_IMAGE} || docker rmi -f sabayon/builder-amd64
+
 for i in "${REPOSITORIES[@]}"
 do
   automated_build $i
