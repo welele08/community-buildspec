@@ -6,27 +6,24 @@ MAILGUN_API_KEY="${MAILGUN_API_KEY}"
 MAILGUN_DOMAIN_NAME="${MAILGUN_DOMAIN_NAME}"
 MAILGUN_FROM="${MAILGUN_FROM:-Excited User <mailgun\@$MAILGUN_DOMAIN_NAME\>}"
 NOW=$(date +"%Y-%m-%d")
-export DOCKER_OPTS="${DOCKER_OPTS}:--t --rm"
-export DOCKER_PULL_IMAGE="{$DOCKER_PULL_IMAGE:-0}" #should be set to 0 if DOCKER_COMMIT_IMAGE is true
 
 DOCKER_COMMIT_IMAGE=${DOCKER_COMMIT_IMAGE:-true}
-
-
 CHECK_BUILD_DIFFS=${CHECK_BUILD_DIFFS:-true}
 VAGRANT_DIR="${VAGRANT_DIR:-/vagrant}"
 REPOSITORIES=( $(find ${VAGRANT_DIR}/repositories -maxdepth 1 -type d -printf '%P\n' | grep -v '^\.') )
 
+export DOCKER_OPTS="${DOCKER_OPTS}:--t --rm"
 export DISTFILES="${VAGRANT_DIR}/distfiles"
 export ENTROPY_DOWNLOADED_PACKAGES="${VAGRANT_DIR}/entropycache"
 
 [ "$DOCKER_COMMIT_IMAGE" = true ]  && export DOCKER_OPTS="-t"
 [ -e ${VAGRANT_DIR}/confs/env ] && . ${VAGRANT_DIR}/confs/env
 
+if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
+  export DOCKER_PULL_IMAGE=0
+fi
 
 die() { echo "$@" 1>&2 ; exit 1; }
-
-
-#[ "$DOCKER_COMMIT_IMAGE" = true ] && [ "$DOCKER_PULL_IMAGE" = "1" ] && die "DOCKER_COMMIT_IMAGE and DOCKER_PULL_IMAGE should not be enabled togheter"
 
 update_vagrant_repo() {
   pushd ${VAGRANT_DIR}
