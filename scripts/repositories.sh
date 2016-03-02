@@ -16,7 +16,7 @@ export DOCKER_OPTS="${DOCKER_OPTS:--t --rm}"
 export DISTFILES="${VAGRANT_DIR}/distfiles"
 export ENTROPY_DOWNLOADED_PACKAGES="${VAGRANT_DIR}/entropycache"
 export DOCKER_EIT_IMAGE="${DOCKER_EIT_IMAGE:-sabayon/eit-amd64}"
-export PORTAGE_CACHE="${PORTAGE_CACHE:-${VAGRANT_DIR}/poragecache}"
+export PORTAGE_CACHE="${PORTAGE_CACHE:-${VAGRANT_DIR}/portagecache}"
 
 [ "$DOCKER_COMMIT_IMAGE" = true ]  && export DOCKER_OPTS="-t"
 [ -e ${VAGRANT_DIR}/confs/env ] && . ${VAGRANT_DIR}/confs/env
