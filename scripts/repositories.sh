@@ -131,7 +131,7 @@ build_all() {
   local CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
 
 
- [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit $CID $DOCKER_IMAGE
+ [ "$DOCKER_COMMIT_IMAGE" = true ] && { docker commit $CID $DOCKER_IMAGE; docker rm -f $CID; }
 
   if [ $BUILD_STATUS -eq 0 ]
   then
