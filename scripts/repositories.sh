@@ -119,15 +119,24 @@ build_all() {
 
   #Build repository
   OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
+  local BUILD_STATUS=$?
+  local CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
 
   if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
-    CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
     if [ -n "$DOCKER_IMAGE" ]; then
       docker commit $CID $DOCKER_IMAGE
     else
       docker commit $CID sabayon/builder-amd64
     fi
+  fi
 
+  if [ $BUILD_STATUS -eq 0 ]
+  then
+    echo "Build successfully"
+  else
+    echo "Build phase failed. Exiting"
+    docker rm -f $CID
+    exit 1
   fi
 
   # Checking diffs
