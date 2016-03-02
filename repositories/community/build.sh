@@ -6,7 +6,9 @@ export REPOSITORY_DESCRIPTION="Community Repository"
 
 BUILD_ARGS=(
   "app-text/cherrytree::and3k-sunrise"
+  "app-emulation/shashlik-bin"
   "--layman and3k-sunrise"
+  "--layman anyc"
 )
 
 build_all "${BUILD_ARGS[@]}"
