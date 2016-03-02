@@ -93,6 +93,13 @@ deploy_all() {
   deploy "${VAGRANT_DIR}/logs/" "$DEPLOY_SERVER_BUILDLOGS" "$DEPLOY_PORT"
 }
 
+distfile_hash(){
+  cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $PACKAGES_TMP/
+  rm -rf $PACKAGES_TMP/Packages
+find $PACKAGES_TMP/ -name "*.tbz2" -print0 | xargs -0 /usr/bin/sabayon-tbz2extract
+  find $PACKAGES_TMP/ -name "*.tbz2" -print0 | xargs -0 rm -rf #remove tbz2s
+}
+
 build_all() {
   local BUILD_ARGS="$@"
 
@@ -120,9 +127,14 @@ build_all() {
     local PACKAGES_TMP=$(mktemp -t "$(basename $0).XXXXXXXXXX")
     #we need to get rid of Packages during md5sum, it contains TIMESTAMP that gets updated on each build (and thus changes, also if the compiled files remains the same)
     #here we are trying to see if there are diffs between the bins, not buy the metas.
-    mv -f "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages" $PACKAGES_TMP
-    md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $OLD_BINHOST_MD5
-    mv -f $PACKAGES_TMP "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages"
+
+    # let's do the hash of the tbz2 without xpak data
+    cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $PACKAGES_TMP/
+    rm -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages
+    find ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/ -type f -iname '*.tbz2' -exec /usr/bin/sabayon-tbz2truncate {} \;
+    md5deep -j0 -r -s ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/ > $OLD_BINHOST_MD5
+    rm -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/*
+    cp -rf  $PACKAGES_TMP/* ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/
   fi
 
   #Build repository
@@ -144,9 +156,16 @@ build_all() {
 
   # Checking diffs
   if [ "$CHECK_BUILD_DIFFS" = true ]; then
-    local PACKAGES_TMP=$(mktemp -t "$(basename $0).XXXXXXXXXX")
-    mv -f "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages" $PACKAGES_TMP
-    md5deep -j0 -r -s "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" > $NEW_BINHOST_MD5
+    local PACKAGES_TMP=$(mktemp -td "$(basename $0).XXXXXXXXXX")
+
+    # let's do the hash of the tbz2 without xpak data
+    cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $PACKAGES_TMP/
+    rm -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages
+    find ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/ -type f -iname '*.tbz2' -exec /usr/bin/sabayon-tbz2truncate {} \;
+    md5deep -j0 -r -s ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/ > $NEW_BINHOST_MD5
+    rm -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/*
+    cp -rf  $PACKAGES_TMP/* ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/
+
     local TO_INJECT=($(diff -ru $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 | grep -v -e '^\+[\+]' | grep -e '^\+' | awk '{print $2}'))
     mv -f $PACKAGES_TMP "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages"
     #if diffs are detected, regenerate the repository
