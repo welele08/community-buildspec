@@ -65,7 +65,7 @@ deploy() {
 
 }
 
-systen_upgrade() {
+system_upgrade() {
   # upgrade
   rsync -av -H -A -X --delete-during "rsync://rsync.at.gentoo.org/gentoo-portage/licenses/" "/usr/portage/licenses/"
   ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
@@ -89,7 +89,7 @@ deploy_all() {
 
   # Local deploy:
   #rsync -arvP --delete ${VAGRANT_DIR}/repositories/${REPO}/entropy_artifacts/* ${VAGRANT_DIR}/artifacts/${REPO}/
-  #chmod -R 444 ${VAGRANT_DIR}/artifacts/${REPO} # At least should be readable
+  #chmod -R 444 ${VAGRANT_DIR}/artifacts/${REPO} # At leasVAGRANT_DIRt should be readable
 
   # Remote deploy:
   deploy "${VAGRANT_DIR}/repositories/${REPO}/entropy_artifacts" "$DEPLOY_SERVER" "$DEPLOY_PORT"
