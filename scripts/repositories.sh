@@ -130,7 +130,7 @@ build_all() {
   fi
 
   #Build repository
-  OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
+  DOCKER_IMAGE="$DOCKER_IMAGE" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
   local BUILD_STATUS=$?
   local CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
 
