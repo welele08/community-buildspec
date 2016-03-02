@@ -15,6 +15,7 @@ REPOSITORIES=( $(find ${VAGRANT_DIR}/repositories -maxdepth 1 -type d -printf '%
 export DOCKER_OPTS="${DOCKER_OPTS}:--t --rm"
 export DISTFILES="${VAGRANT_DIR}/distfiles"
 export ENTROPY_DOWNLOADED_PACKAGES="${VAGRANT_DIR}/entropycache"
+export DOCKER_EIT_IMAGE="${DOCKER_EIT_IMAGE}:-sabayon/eit-amd64"
 
 [ "$DOCKER_COMMIT_IMAGE" = true ]  && export DOCKER_OPTS="-t"
 [ -e ${VAGRANT_DIR}/confs/env ] && . ${VAGRANT_DIR}/confs/env
@@ -101,9 +102,20 @@ build_all() {
 
   local TEMPDIR=$(mktemp -d)
 
-
   [ -z "$REPOSITORY_NAME" ] && echo "warning: repository name (REPOSITORY_NAME) not defined, using your current working directory name"
   REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename $(pwd))}"
+  local DOCKER_IMAGE="${DOCKER_IMAGE:-sabayon/builder-amd64}"
+  local DOCKER_TAGGED_IMAGE="${DOCKER_IMAGE}-$REPOSITORY_NAME"
+
+  if  [ "$DOCKER_COMMIT_IMAGE" = true ]; then
+    #XXX: tag from DOCKER_IMAGE if not already tagged.
+    if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
+      echo "A tagged image already exists"
+    else
+      docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
+    fi
+    DOCKER_IMAGE=$DOCKER_TAGGED_IMAGE
+  fi
 
   local OLD_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
   local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
@@ -122,13 +134,8 @@ build_all() {
   local BUILD_STATUS=$?
   local CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
 
-  if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
-    if [ -n "$DOCKER_IMAGE" ]; then
-      docker commit $CID $DOCKER_IMAGE
-    else
-      docker commit $CID sabayon/builder-amd64
-    fi
-  fi
+
+ [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit $CID $DOCKER_IMAGE
 
   if [ $BUILD_STATUS -eq 0 ]
   then
@@ -152,18 +159,15 @@ build_all() {
     else
       echo "${TO_INJECT[@]} packages needs to be injected"
       cp -rf "${TO_INJECT[@]}" $TEMPDIR/
-
-      PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
     fi
-
   else
     # Creating our permanent binhost
     cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $TEMPDIR
-
-    # Create repository
-    PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
   fi
 
+  unset DOCKER_IMAGE
+  # Create repository
+  DOCKER_IMAGE="${DOCKER_EIT_IMAGE}" DOCKER_PULL_IMAGE=1 PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
 
   rm -rf $TEMPDIR
   [ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
@@ -230,4 +234,11 @@ generate_metadata() {
   done
 
 
+}
+
+
+docker_clean() {
+  [ -n "${DOCKER_IMAGE}" ] && docker rmi -f ${DOCKER_IMAGE} || docker rmi -f sabayon/builder-amd64
+  docker rmi -f $( docker images | tr -s ' ' | cut -d ' ' -f 3)
+  docker ps -a -q | xargs -n 1 -I {} sudo docker rm {}
 }
