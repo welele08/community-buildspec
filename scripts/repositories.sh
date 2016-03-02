@@ -87,15 +87,9 @@ deploy_all() {
 
   [ -d "${VAGRANT_DIR}/artifacts/${REPO}/" ] || mkdir -p ${VAGRANT_DIR}/artifacts/${REPO}/
 
-  # Local deploy:
-  #rsync -arvP --delete ${VAGRANT_DIR}/repositories/${REPO}/entropy_artifacts/* ${VAGRANT_DIR}/artifacts/${REPO}/
-  #chmod -R 444 ${VAGRANT_DIR}/artifacts/${REPO} # At leasVAGRANT_DIRt should be readable
-
   # Remote deploy:
   deploy "${VAGRANT_DIR}/repositories/${REPO}/entropy_artifacts" "$DEPLOY_SERVER" "$DEPLOY_PORT"
   deploy "${VAGRANT_DIR}/logs/" "$DEPLOY_SERVER_BUILDLOGS" "$DEPLOY_PORT"
-
-
 }
 
 build_all() {
@@ -175,8 +169,6 @@ build_all() {
 
   # Deploy repository inside "repositories"
   deploy_all "${REPOSITORY_NAME}"
-
-
 }
 
 build_clean() {
@@ -205,11 +197,9 @@ automated_build() {
   send_email "[$REPO_NAME] $NOW Build" "Finished, log is available at: ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log"
   popd
   rm -rf $TEMPLOG
-
 }
 
 generate_metadata() {
-
   echo "Generating metadata"
   # Generate repository list
   printf "%s\n" "${REPOSITORIES[@]}" > ${VAGRANT_DIR}/artifacts/AVAILABLE_REPOSITORIES
@@ -233,8 +223,6 @@ generate_metadata() {
     perl -pi -e 's/\:/\//' "${outputpkglist}"
     echo "Generated packagelist: ${outputpkglist}"
   done
-
-
 }
 
 
