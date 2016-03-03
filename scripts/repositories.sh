@@ -130,7 +130,7 @@ build_all() {
   local TEMPDIR=$(mktemp -d)
 
   [ -z "$REPOSITORY_NAME" ] && echo "warning: repository name (REPOSITORY_NAME) not defined, using your current working directory name"
-  REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename $(pwd))}"
+  export REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename $(pwd))}"
   local DOCKER_IMAGE="${DOCKER_IMAGE:-sabayon/builder-amd64}"
   local DOCKER_TAGGED_IMAGE="${DOCKER_IMAGE}-$REPOSITORY_NAME"
 
