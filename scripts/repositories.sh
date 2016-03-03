@@ -96,12 +96,14 @@ deploy_all() {
 
 pkg_hash() {
   local PKG="${1}"
+  local HASHFILE="${2}"
   local PKG_TMP=$(mktemp -td "$(basename $0).XXXXXXXXXX")
   local PKG_CONTENT_HASH_TMP=$(mktemp -t "$(basename $0).XXXXXXXXXX")
-  echo "[$PKG] Calculating hash"
+   echo "[-] Calculating hash for $PKG"
+   pushd $PKG_TMP
    tar -xvf "$PKG" -C "$PKG_TMP" | xargs -I '{}' sh -c "test -f '{}' && md5sum '{}'" > "$PKG_CONTENT_HASH_TMP"
-
-   echo $(cat $PKG_CONTENT_HASH_TMP | sha256sum | awk '{ print $1 }')
+   popd
+   echo $(cat $PKG_CONTENT_HASH_TMP | sha256sum | awk '{ print $1 }') "$PKG" >> $HASHFILE
    rm -rf $PKG_TMP
    rm -rf $PKG_CONTENT_HASH_TMP
 }
@@ -111,12 +113,16 @@ packages_hash() {
   local REPOSITORY_NAME="${2}"
   local HASH_OUTPUT="${3}"
 
-  echo "Creating hash for $REPOSITORY_NAME in $VAGRANT_DIR at $HASH_OUTPUT"
+  echo "[*] Creating hash for $REPOSITORY_NAME in $VAGRANT_DIR at $HASH_OUTPUT"
   # let's do the hash of the tbz2 without xpak data
-  export -f pkg_hash
-  export HASH_OUTPUT
-  find ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/ -type f -iname '*.tbz2' -exec bash -c "echo $(pkg_hash \"{}\") >> ${HASH_OUTPUT}" bash {} +
+  local TBZ2s=( $(find ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/ -type f -iname '*.tbz2' | sort) )
+  for i in "${TBZ2s[@]}"
+  do
+    pkg_hash "$i" ${HASH_OUTPUT}
+  done
+  cat ${HASH_OUTPUT}
 }
+
 
 build_all() {
   local BUILD_ARGS="$@"
@@ -129,9 +135,15 @@ build_all() {
   local DOCKER_TAGGED_IMAGE="${DOCKER_IMAGE}-$REPOSITORY_NAME"
 
   if  [ "$DOCKER_COMMIT_IMAGE" = true ]; then
+    if docker images | grep -q "$DOCKER_IMAGE"; then
+      echo "[*] The base image exists"
+    else
+      docker pull "$DOCKER_IMAGE"
+    fi
+
     #XXX: tag from DOCKER_IMAGE if not already tagged.
     if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
-      echo "A tagged image already exists"
+      echo "[*] A tagged image already exists"
     else
       docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
     fi
