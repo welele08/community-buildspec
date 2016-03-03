@@ -18,7 +18,7 @@ export ENTROPY_DOWNLOADED_PACKAGES="${VAGRANT_DIR}/entropycache"
 export DOCKER_EIT_IMAGE="${DOCKER_EIT_IMAGE:-sabayon/eit-amd64}"
 export PORTAGE_CACHE="${PORTAGE_CACHE:-${VAGRANT_DIR}/portagecache}"
 export EMERGE_DEFAULTS_ARGS="${EMERGE_DEFAULTS_ARGS:---accept-properties=-interactive -t --verbose --oneshot --complete-graph --buildpkg}"
-export FEATURES="parallel-fetch protect-owned nostrip -userpriv"
+export FEATURES="parallel-fetch protect-owned -userpriv"
 
 [ "$DOCKER_COMMIT_IMAGE" = true ]  && export DOCKER_OPTS="-t"
 [ -e ${VAGRANT_DIR}/confs/env ] && . ${VAGRANT_DIR}/confs/env
@@ -94,21 +94,28 @@ deploy_all() {
   deploy "${VAGRANT_DIR}/logs/" "$DEPLOY_SERVER_BUILDLOGS" "$DEPLOY_PORT"
 }
 
+pkg_hash() {
+  local PKG="${1}"
+  local PKG_TMP=$(mktemp -td "$(basename $0).XXXXXXXXXX")
+  local PKG_CONTENT_HASH_TMP=$(mktemp -t "$(basename $0).XXXXXXXXXX")
+  echo "[$PKG] Calculating hash"
+   tar -xvf "$PKG" -C "$PKG_TMP" | xargs -I '{}' sh -c "test -f '{}' && md5sum '{}'" > "$PKG_CONTENT_HASH_TMP"
+
+   echo $(cat $PKG_CONTENT_HASH_TMP | sha256sum | awk '{ print $1 }')
+   rm -rf $PKG_TMP
+   rm -rf $PKG_CONTENT_HASH_TMP
+}
+
 packages_hash() {
   local VAGRANT_DIR="${1}"
   local REPOSITORY_NAME="${2}"
   local HASH_OUTPUT="${3}"
-  local PACKAGES_TMP=$(mktemp -td "$(basename $0).XXXXXXXXXX")
 
   echo "Creating hash for $REPOSITORY_NAME in $VAGRANT_DIR at $HASH_OUTPUT"
   # let's do the hash of the tbz2 without xpak data
-  cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $PACKAGES_TMP/
-  rm -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages
-  find ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/ -type f -iname '*.tbz2' -exec /usr/bin/sabayon-tbz2truncate {} \;
-  md5deep -j0 -r -s ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/ > $HASH_OUTPUT
-  rm -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/*
-  cp -rf $PACKAGES_TMP/* ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/
-  rm -rf $PACKAGES_TMP
+  export -f pkg_hash
+  export HASH_OUTPUT
+  find ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/ -type f -iname '*.tbz2' -exec bash -c "echo $(pkg_hash \"{}\") >> ${HASH_OUTPUT}" bash {} +
 }
 
 build_all() {
