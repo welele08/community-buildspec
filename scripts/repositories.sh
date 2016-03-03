@@ -18,6 +18,7 @@ export ENTROPY_DOWNLOADED_PACKAGES="${VAGRANT_DIR}/entropycache"
 export DOCKER_EIT_IMAGE="${DOCKER_EIT_IMAGE:-sabayon/eit-amd64}"
 export PORTAGE_CACHE="${PORTAGE_CACHE:-${VAGRANT_DIR}/portagecache}"
 export EMERGE_DEFAULTS_ARGS="${EMERGE_DEFAULTS_ARGS:---accept-properties=-interactive -t --verbose --oneshot --complete-graph --buildpkg}"
+export FEATURES="parallel-fetch protect-owned nostrip -userpriv"
 
 [ "$DOCKER_COMMIT_IMAGE" = true ]  && export DOCKER_OPTS="-t"
 [ -e ${VAGRANT_DIR}/confs/env ] && . ${VAGRANT_DIR}/confs/env
@@ -99,14 +100,15 @@ packages_hash() {
   local HASH_OUTPUT="${3}"
   local PACKAGES_TMP=$(mktemp -td "$(basename $0).XXXXXXXXXX")
 
-
+  echo "Creating hash for $REPOSITORY_NAME in $VAGRANT_DIR at $HASH_OUTPUT"
   # let's do the hash of the tbz2 without xpak data
   cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $PACKAGES_TMP/
   rm -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages
   find ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/ -type f -iname '*.tbz2' -exec /usr/bin/sabayon-tbz2truncate {} \;
   md5deep -j0 -r -s ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/ > $HASH_OUTPUT
   rm -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/*
-  cp -rf  $PACKAGES_TMP/* ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/
+  cp -rf $PACKAGES_TMP/* ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/
+  rm -rf $PACKAGES_TMP
 }
 
 build_all() {
@@ -163,9 +165,7 @@ build_all() {
     # let's do the hash of the tbz2 without xpak data
     packages_hash $VAGRANT_DIR $REPOSITORY_NAME $NEW_BINHOST_MD5
 
-
     local TO_INJECT=($(diff -ru $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 | grep -v -e '^\+[\+]' | grep -e '^\+' | awk '{print $2}'))
-    mv -f $PACKAGES_TMP "${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/Packages"
     #if diffs are detected, regenerate the repository
     if diff -q $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 >/dev/null ; then
       echo "There was no changes, repository generation prevented"
