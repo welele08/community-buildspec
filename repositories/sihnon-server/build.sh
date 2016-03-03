@@ -7,7 +7,7 @@ export REPOSITORY_DESCRIPTION="Sihnon server packages"
 BUILD_ARGS=(
     "app-admin/puppetdb"
     "app-admin/puppetserver"
-    "app-backup/backuppc"
+    "=app-backup/backuppc-3.3.0-r1"
     "dev-db/phppgadmin"
     "dev-db/phpmyadmin"
     "www-apps/cgit"
