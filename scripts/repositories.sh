@@ -19,6 +19,7 @@ export DOCKER_EIT_IMAGE="${DOCKER_EIT_IMAGE:-sabayon/eit-amd64}"
 export PORTAGE_CACHE="${PORTAGE_CACHE:-${VAGRANT_DIR}/portagecache}"
 export EMERGE_DEFAULTS_ARGS="${EMERGE_DEFAULTS_ARGS:---accept-properties=-interactive -t --verbose --oneshot --complete-graph --buildpkg}"
 export FEATURES="parallel-fetch protect-owned -userpriv"
+URI_BASE="${URI_BASE:-http://mirror.de.sabayon.org/community/}"
 
 [ "$DOCKER_COMMIT_IMAGE" = true ]  && export DOCKER_OPTS="-t"
 [ -e ${VAGRANT_DIR}/confs/env ] && . ${VAGRANT_DIR}/confs/env
@@ -189,7 +190,9 @@ build_all() {
     local TO_INJECT=($(diff -ru $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 | grep -v -e '^\+[\+]' | grep -e '^\+' | awk '{print $2}'))
     #if diffs are detected, regenerate the repository
     if diff -q $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 >/dev/null ; then
-      echo "There was no changes, repository generation prevented"
+      echo "No changes where detected, repository generation prevented"
+      rm -rf $TEMPDIR
+      exit 0
     else
       echo "${TO_INJECT[@]} packages needs to be injected"
       cp -rf "${TO_INJECT[@]}" $TEMPDIR/
@@ -228,12 +231,12 @@ automated_build() {
   [ -z "$REPO_NAME" ] && die "You called automated_build() blindly, without a reason, huh?"
   pushd ${VAGRANT_DIR}/repositories/$REPO_NAME
   ### XXX: Libchecks in there!
-  send_email "[$REPO_NAME] $NOW Build" "Build started for $REPO_NAME at $NOW, temp log is on $TEMPLOG"
+  send_email "[Community Builder] $NOW Build" "Repository \"${REPO_NAME}\" build started at $NOW"
   [ -f "build.sh" ] && ./build.sh  1>&2 > $TEMPLOG
   mytime=$(date +%s)
   ansifilter $TEMPLOG > "${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log"
   chmod 444 ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log
-  send_email "[$REPO_NAME] $NOW Build" "Finished, log is available at: ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log"
+  send_email "[Community Builder] $NOW Build" "Repository \"${REPO_NAME}\" build completed. Log is available at: ${URI_BASE}/logs/$NOW/$REPO_NAME.$mytime.log"
   popd
   rm -rf $TEMPLOG
 }
