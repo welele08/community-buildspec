@@ -1,3 +1,4 @@
+app-admin/puppet-agent puppetdb
 app-admin/puppetserver puppetdb
 dev-db/phppgadmin vhosts
 dev-db/phpmyadmin vhosts
