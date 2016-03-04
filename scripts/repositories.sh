@@ -191,7 +191,7 @@ build_all() {
     #if diffs are detected, regenerate the repository
     if diff -q $OLD_BINHOST_MD5 $NEW_BINHOST_MD5 >/dev/null ; then
       echo "No changes where detected, repository generation prevented"
-      rm -rf $TEMPDIR
+      rm -rf $TEMPDIR $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
       exit 0
     else
       echo "${TO_INJECT[@]} packages needs to be injected"
