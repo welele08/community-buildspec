@@ -13,8 +13,3 @@ chmod -R 444 ${VAGRANT_DIR}/logs/$NOW
 update_vagrant_repo
 
 docker_clean
-
-for i in "${REPOSITORIES[@]}"
-do
-  automated_build $i
-done
