@@ -97,21 +97,23 @@ deploy_all() {
 pkg_hash() {
   local PKG="${1}"
   local HASHFILE="${2}"
-  local PKG_TMP=$(mktemp -td "$(basename $0).XXXXXXXXXX")
-  local PKG_CONTENT_HASH_TMP=$(mktemp -t "$(basename $0).XXXXXXXXXX")
+  local PKG_TMP=$(mktemp -t "$(basename $0).XXXXXXXXXX")
    echo "[-] Calculating hash for $PKG"
-   pushd $PKG_TMP
-   tar -xvf "$PKG" -C "$PKG_TMP" | xargs -I '{}' sh -c "test -f '{}' && md5sum '{}'" > "$PKG_CONTENT_HASH_TMP"
-   popd
-   echo $(cat $PKG_CONTENT_HASH_TMP | sha256sum | awk '{ print $1 }') "$PKG" >> $HASHFILE
+
+   #yeah, it is slow, but other methods tried so far just failed.
+   bunzip2 -c < "$PKG" | tar -xO | gzip -nc > "$PKG_TMP"
+   local HASH=$(gzip -lv "$PKG_TMP" | awk '{if(NR>1)print $2}')
+
+   echo "$HASH" "$PKG" >> $HASHFILE
    rm -rf $PKG_TMP
-   rm -rf $PKG_CONTENT_HASH_TMP
 }
 
 packages_hash() {
   local VAGRANT_DIR="${1}"
   local REPOSITORY_NAME="${2}"
   local HASH_OUTPUT="${3}"
+
+  # cksum '{}' | awk '{ print \$10 \$2 \$3 }'
 
   echo "[*] Creating hash for $REPOSITORY_NAME in $VAGRANT_DIR at $HASH_OUTPUT"
   # let's do the hash of the tbz2 without xpak data
