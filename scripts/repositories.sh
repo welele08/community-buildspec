@@ -137,6 +137,16 @@ build_all() {
   local DOCKER_IMAGE="${DOCKER_IMAGE:-sabayon/builder-amd64}"
   local DOCKER_TAGGED_IMAGE="${DOCKER_IMAGE}-$REPOSITORY_NAME"
 
+  if  [ "$CLEAN_CACHE" = true ] &&
+      [ "$DOCKER_COMMIT_IMAGE" = true ]; then
+    if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
+      docker rmi -f "$DOCKER_TAGGED_IMAGE"
+    fi
+    docker pull "$DOCKER_IMAGE"
+    docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
+  fi
+
+
   if  [ "$DOCKER_COMMIT_IMAGE" = true ]; then
     if docker images | grep -q "$DOCKER_IMAGE"; then
       echo "[*] The base image exists"
