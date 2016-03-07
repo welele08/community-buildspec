@@ -17,3 +17,5 @@ do
 done
 
 generate_metadata
+
+docker_clean

@@ -279,7 +279,6 @@ generate_metadata() {
 
 
 docker_clean() {
-  [ -n "${DOCKER_IMAGE}" ] && docker rmi -f ${DOCKER_IMAGE} || docker rmi -f sabayon/builder-amd64
-  docker rmi -f $( docker images | tr -s ' ' | cut -d ' ' -f 3)
   docker ps -a -q | xargs -n 1 -I {} sudo docker rm {}
+  docker rmi $( docker images | grep '<none>' | tr -s ' ' | cut -d ' ' -f 3)
 }

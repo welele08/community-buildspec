@@ -18,13 +18,15 @@ do
   popd
 done
 
+docker_clean
 
-#vagrant_cleanup
+[ -n "${DOCKER_IMAGE}" ] && docker rmi -f ${DOCKER_IMAGE} || docker rmi -f sabayon/builder-amd64
 
-#docker
 systemctl stop docker
 rm -rfv /var/lib/docker
 systemctl start docker
+
+[ -n "${DOCKER_IMAGE}" ] && docker pull ${DOCKER_IMAGE} || docker pull sabayon/builder-amd64
 
 # update crontab
 crontab ${VAGRANT_DIR}/confs/crontab
