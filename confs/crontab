@@ -4,5 +4,5 @@ MAILTO=root
 HOME=/
 
 1 22 * * * /vagrant/scripts/nightly.sh
-0 0 1 * * /vagrant/scripts/monthly.sh
+5 8 1 * * /vagrant/scripts/monthly.sh
 5 8 * * 6 /vagrant/scripts/weekly.sh
