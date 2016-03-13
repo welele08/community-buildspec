@@ -1,7 +1,7 @@
 #!/bin/bash
 . /vagrant/scripts/repositories.sh
 
-export EMERGE_DEFAULTS_ARGS="-k --accept-properties=-interactive --verbose --oneshot --complete-graph --buildpkg"
+export EMERGE_DEFAULTS_ARGS="--accept-properties=-interactive --verbose --oneshot --complete-graph --buildpkg"
 export REPOSITORY_DESCRIPTION="Kernel with dracut testing Repository"
 
 BUILD_ARGS=(
