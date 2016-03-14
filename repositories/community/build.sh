@@ -6,8 +6,8 @@ export REPOSITORY_DESCRIPTION="Community Repository"
 
 BUILD_ARGS=(
   "app-text/cherrytree::and3k-sunrise"
-  "games-strategy/megaglest"
-  "app-emulation/shashlik-bin"
+  "games-strategy/megaglest::games-overlay"
+  "app-emulation/shashlik-bin::anyc"
   "--layman and3k-sunrise"
   "--layman anyc"
   "--layman games-overlay"
