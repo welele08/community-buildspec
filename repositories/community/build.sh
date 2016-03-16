@@ -8,8 +8,10 @@ BUILD_ARGS=(
   "app-text/cherrytree::and3k-sunrise"
   "games-strategy/megaglest::games-overlay"
   "app-emulation/shashlik-bin::anyc"
+  "games-emulation/xmame::mv"
   "--layman and3k-sunrise"
   "--layman anyc"
+  "--layman mv"
   "--layman games-overlay"
 )
 
