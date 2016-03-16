@@ -11,6 +11,8 @@ do
   pushd ${VAGRANT_DIR}/repositories/$i
   send_email "[$i] Cleanup" "Started clean for $i $NOW , temp log is on $TEMPLOG"
   [ -f "clean.sh" ] && ./clean.sh  1>&2 > $TEMPLOG
+  export REPOSITORY_NAME="$i"
+  build_clean
   mytime=$(date +%s)
   cp -rfv $TEMPLOG "/vagrant/logs/$NOW/$i-clean.$mytime.log"
   chmod 444 ${VAGRANT_DIR}/logs/$NOW/$i-clean.$mytime.log
