@@ -280,6 +280,13 @@ generate_metadata() {
 
 
 docker_clean() {
-  docker ps -a -q | xargs -n 1 -I {} sudo docker rm {}
-  docker rmi $( docker images | grep '<none>' | tr -s ' ' | cut -d ' ' -f 3)
+	# Best effort - cleaning orphaned containers
+	docker ps -a -q | xargs -n 1 -I {} sudo docker rm {}
+
+	# Best effort - cleaning orphaned images
+	local images=$(docker images | grep '<none>' | tr -s ' ' | cut -d ' ' -f 3)
+	if [ -n "${images}" ]; then
+		docker rmi ${images}
+	fi
+	
 }
