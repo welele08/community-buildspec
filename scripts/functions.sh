@@ -20,6 +20,9 @@ export PORTAGE_CACHE="${PORTAGE_CACHE:-${VAGRANT_DIR}/portagecache}"
 export EMERGE_DEFAULTS_ARGS="${EMERGE_DEFAULTS_ARGS:---accept-properties=-interactive -t --verbose --oneshot --complete-graph --buildpkg}"
 export FEATURES="parallel-fetch protect-owned -userpriv"
 export WEBRSYNC="${WEBRSYNC:-1}"
+export PRIVATEKEY="${PRIVATEKEY:-${VAGRANT_DIR}/confs/private.key}"
+export PUBKEY="${PUBKEY:-${VAGRANT_DIR}/confs/key.pub}"
+
 URI_BASE="${URI_BASE:-http://mirror.de.sabayon.org/community/}"
 
 [ "$DOCKER_COMMIT_IMAGE" = true ]  && export DOCKER_OPTS="-t"

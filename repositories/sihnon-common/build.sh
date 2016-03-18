@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /vagrant/scripts/repositories.sh
+. /vagrant/scripts/functions.sh
 
 export REPOSITORY_DESCRIPTION="Sihnon common packages"
 

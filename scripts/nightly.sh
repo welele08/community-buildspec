@@ -1,7 +1,7 @@
 #!/bin/bash
 # written by mudler@sabayon.org
 
-. /vagrant/scripts/repositories.sh
+. /vagrant/scripts/functions.sh
 
 export DEPLOY_SERVER
 export DEPLOY_PORT
