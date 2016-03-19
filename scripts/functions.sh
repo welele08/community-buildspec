@@ -279,11 +279,13 @@ generate_metadata() {
     perl -pi -e 's/\:/\//' "${outputpkglist}"
     echo "Generated packagelist: ${outputpkglist}"
   done
+
+  perl ${VAGRANT_DIR}/scripts/community_packages_list.pl
 }
 
 
 docker_clean() {
-	# Best effort - cleaning orphaned containers
+  # Best effort - cleaning orphaned containers
 	docker ps -a -q | xargs -n 1 -I {} sudo docker rm {}
 
 	# Best effort - cleaning orphaned images
@@ -291,5 +293,5 @@ docker_clean() {
 	if [ -n "${images}" ]; then
 		docker rmi ${images}
 	fi
-	
+
 }
