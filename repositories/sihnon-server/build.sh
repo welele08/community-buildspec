@@ -15,6 +15,7 @@ BUILD_ARGS=(
     "www-apps/gitlabhq"
     "www-apps/piwik"
     "www-apps/wordpress"
+    "www-misc/shellinabox"
     "www-servers/gitlab-workhorse"
     "--layman awesome"
     "--layman gitlab"
