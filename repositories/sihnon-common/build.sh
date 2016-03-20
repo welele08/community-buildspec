@@ -15,10 +15,13 @@ BUILD_ARGS=(
     "dev-util/jenkins-bin"
     "net-analyzer/nagios-plugins"
     "net-misc/openssh"
+    "net-misc/pssh"
+    "sys-fs/zfs-auto-snapshot"
     "--remove app-admin/puppet"
     "--remove app-emulation/virt-what"
     "--remove dev-ruby/facter"
     "--remove dev-ruby/hiera"
+    "--layman gentoo-zh"
 )
 
 build_all "${BUILD_ARGS[@]}"
