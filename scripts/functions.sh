@@ -23,7 +23,7 @@ export WEBRSYNC="${WEBRSYNC:-1}"
 export PRIVATEKEY="${PRIVATEKEY:-${VAGRANT_DIR}/confs/private.key}"
 export PUBKEY="${PUBKEY:-${VAGRANT_DIR}/confs/key.pub}"
 export ARCHES="amd64"
-export KEEP_PREVIOUS_VERSIONS=3 #you can override this in build.sh
+export KEEP_PREVIOUS_VERSIONS=1 #you can override this in build.sh
 
 URI_BASE="${URI_BASE:-http://mirror.de.sabayon.org/community/}"
 
