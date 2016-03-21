@@ -22,6 +22,7 @@ export FEATURES="parallel-fetch protect-owned -userpriv"
 export WEBRSYNC="${WEBRSYNC:-1}"
 export PRIVATEKEY="${PRIVATEKEY:-${VAGRANT_DIR}/confs/private.key}"
 export PUBKEY="${PUBKEY:-${VAGRANT_DIR}/confs/key.pub}"
+export COMMUNITY_REPOSITORY_SPECS="${$COMMUNITY_REPOSITORY_SPECS:-https://github.com/Sabayon/community.git}"
 export ARCHES="amd64"
 export KEEP_PREVIOUS_VERSIONS=1 #you can override this in build.sh
 
@@ -40,6 +41,9 @@ update_vagrant_repo() {
   pushd ${VAGRANT_DIR}
   git fetch --all
   git reset --hard origin/master
+  rm -rf ${VAGRANT_DIR}/repositories
+  git clone ${COMMUNITY_REPOSITORY_SPECS} ${VAGRANT_DIR}/repositories
+  rm -rf ${VAGRANT_DIR}/repositories/.git
   popd
 }
 
