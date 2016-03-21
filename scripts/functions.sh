@@ -301,7 +301,7 @@ purge_old_packages() {
   do
     local REPO_CONTENT=$(cat ${i} | perl -lpe 's:\~.*::g' | xargs echo );
     local TOREMOVE=$(OUTPUT_REMOVED=1 PACKAGES=$REPO_CONTENT perl ${VAGRANT_DIR}/scripts/purge_old_versions.pl );
-    [ -n "${TOREMOVE}"] && package_remove ${TOREMOVE};
+    [ -n "${TOREMOVE}" ] && package_remove ${TOREMOVE};
   done
 }
 
