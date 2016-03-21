@@ -1,8 +1,8 @@
 #!/usr/bin/perl
 # purge old versions script - mudler@sabayon.org
-# input: as argv a list of packages with version
+# input: as env (PACKAGES) a list of packages with version
 # output: the packages which should remain or should be removed (set the OUTPUT_REMOVED and KEEP env variable accordingly)
-#
+# PACKAGES: the list of packages to inspect
 # KEEP: if set to a number, there will be kept the latest $n versions of each package. set to -1 to disable
 # OUTPUT_REMOVED: if set to 1 it returns the package of the set that should be removed. if set to 0 it returns the packages that satisfy the clause (order to keep the greater versions in the repositories)
 
