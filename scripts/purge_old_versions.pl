@@ -26,6 +26,7 @@ sub to_atom { my $p = shift; $p =~ s/-[0-9]{1,}.*$//; return $p; }
 
 my $keep           = $ENV{KEEP_PREVIOUS_VERSIONS} // 3;
 my $output_removed = $ENV{OUTPUT_REMOVED}         // 1;
+my $packages = $ENV{PACKAGES};
 
 sub purge {
     my @packages_to_purge = @_;
@@ -64,4 +65,4 @@ sub purge {
 
 }
 
-print join( " ", purge(@ARGV) );
+print join( " ", purge(split(/ /,$packages)) );

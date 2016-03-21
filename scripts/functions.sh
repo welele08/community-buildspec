@@ -225,6 +225,11 @@ build_all() {
   rm -rf $TEMPDIR
   [ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
 
+  # Generating metadata
+  generate_repository_metadata
+
+  purge_old_packages
+
   # Deploy repository inside "repositories"
   deploy_all "${REPOSITORY_NAME}"
 }
@@ -267,7 +272,12 @@ generate_metadata() {
   cat ${VAGRANT_DIR}/artifacts/AVAILABLE_REPOSITORIES
   # \.[a-f0-9]{40}
 
-  local PKGLISTS=($(find ${VAGRANT_DIR}/artifacts/ | grep packages.db.pkglist))
+  perl ${VAGRANT_DIR}/scripts/community_packages_list.pl
+}
+
+generate_repository_metadata() {
+  local REPOSITORY=$REPOSITORY_NAME
+  local PKGLISTS=($(find ${VAGRANT_DIR}/artifacts/$REPOSITORY | grep packages.db.pkglist))
 
   for i in "${PKGLISTS[@]}"
   do
@@ -281,21 +291,16 @@ generate_metadata() {
     perl -pi -e 's/\:/\//' "${outputpkglist}"
     echo "Generated packagelist: ${outputpkglist}"
   done
-
-  perl ${VAGRANT_DIR}/scripts/community_packages_list.pl
 }
 
 purge_old_packages() {
-  local REPO=$1
-  export REPOSITORY_NAME=$REPO
 
-  [ -f "${VAGRANT_DIR}/repositories/$REPO/build.sh" ] && source ${VAGRANT_DIR}/repositories/$REPO/build.sh
-
-  local PKGLISTS=($(find ${VAGRANT_DIR}/artifacts/$REPO/ | grep PKGLIST))
+  local PKGLISTS=($(find ${VAGRANT_DIR}/artifacts/$REPOSITORY_NAME/ | grep PKGLIST))
 
   for i in "${PKGLISTS[@]}"
   do
-    local TOREMOVE=$(OUTPUT_REMOVED=1 perl ${VAGRANT_DIR}/scripts/purge_old_versions.pl $(cat ${i} | perl -lpe 's:\~.*::g' | xargs echo ));
+    local REPO_CONTENT=$(cat ${i} | perl -lpe 's:\~.*::g' | xargs echo );
+    local TOREMOVE=$(OUTPUT_REMOVED=1 PACKAGES=$REPO_CONTENT perl ${VAGRANT_DIR}/scripts/purge_old_versions.pl );
     [ -n "${TOREMOVE}"] && package_remove ${TOREMOVE};
   done
 }
