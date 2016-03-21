@@ -18,4 +18,9 @@ done
 
 generate_metadata
 
+for i in "${REPOSITORIES[@]}"
+do
+  purge_old_packages $i
+done
+
 docker_clean

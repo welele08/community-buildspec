@@ -22,6 +22,8 @@ export FEATURES="parallel-fetch protect-owned -userpriv"
 export WEBRSYNC="${WEBRSYNC:-1}"
 export PRIVATEKEY="${PRIVATEKEY:-${VAGRANT_DIR}/confs/private.key}"
 export PUBKEY="${PUBKEY:-${VAGRANT_DIR}/confs/key.pub}"
+export ARCHES="amd64"
+export KEEP_PREVIOUS_VERSIONS=3 #you can override this in build.sh
 
 URI_BASE="${URI_BASE:-http://mirror.de.sabayon.org/community/}"
 
@@ -281,6 +283,21 @@ generate_metadata() {
   done
 
   perl ${VAGRANT_DIR}/scripts/community_packages_list.pl
+}
+
+purge_old_packages() {
+  local REPO=$1
+  export REPOSITORY_NAME=$REPO
+
+  [ -f "${VAGRANT_DIR}/repositories/$REPO/build.sh" ] && source ${VAGRANT_DIR}/repositories/$REPO/build.sh
+
+  local PKGLISTS=($(find ${VAGRANT_DIR}/artifacts/$REPO/ | grep PKGLIST))
+
+  for i in "${PKGLISTS[@]}"
+  do
+    local TOREMOVE=$(OUTPUT_REMOVED=1 perl ${VAGRANT_DIR}/scripts/purge_old_versions.pl $(cat ${i} | perl -lpe 's:\~.*::g' | xargs echo ));
+    [ -n "${TOREMOVE}"] && package_remove ${TOREMOVE};
+  done
 }
 
 

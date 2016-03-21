@@ -24,8 +24,8 @@ sub natural_order {
 
 sub to_atom { my $p = shift; $p =~ s/-[0-9]{1,}.*$//; return $p; }
 
-my $keep           = $ENV{KEEP}           // 3;
-my $output_removed = $ENV{OUTPUT_REMOVED} // 1;
+my $keep           = $ENV{KEEP_PREVIOUS_VERSIONS} // 3;
+my $output_removed = $ENV{OUTPUT_REMOVED}         // 1;
 
 sub purge {
     my @packages_to_purge = @_;
@@ -50,7 +50,12 @@ sub purge {
           for ( keys %{$atom_cache} );
     }
     elsif ( $output_removed == 1 ) {
-        do { splice( @{ $atom_cache->{$_} }, -$keep ) if @{ $atom_cache->{$_} } >= $keep} for ( keys %{$atom_cache} );
+        for ( keys %{$atom_cache} ) {
+            if ( @{ $atom_cache->{$_} } >= $keep ) {
+                splice( @{ $atom_cache->{$_} }, -$keep );
+            }
+            else { $atom_cache->{$_} = []; }
+        }
     }
 
     push( @return, @{ $atom_cache->{$_} } ) for ( keys %{$atom_cache} );
