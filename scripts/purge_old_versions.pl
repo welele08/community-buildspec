@@ -50,8 +50,7 @@ sub purge {
           for ( keys %{$atom_cache} );
     }
     elsif ( $output_removed == 1 ) {
-
-        splice( @{ $atom_cache->{$_} }, -$keep ) for ( keys %{$atom_cache} );
+        do { splice( @{ $atom_cache->{$_} }, -$keep ) if @{ $atom_cache->{$_} } >= $keep} for ( keys %{$atom_cache} );
     }
 
     push( @return, @{ $atom_cache->{$_} } ) for ( keys %{$atom_cache} );
@@ -61,4 +60,3 @@ sub purge {
 }
 
 print join( " ", purge(@ARGV) );
-
