@@ -299,13 +299,15 @@ generate_repository_metadata() {
 purge_old_packages() {
 
   local PKGLISTS=($(find ${VAGRANT_DIR}/artifacts/$REPOSITORY_NAME/ | grep PKGLIST))
-
+  local REMOVED=0
   for i in "${PKGLISTS[@]}"
   do
     local REPO_CONTENT=$(cat ${i} | perl -lpe 's:\~.*::g' | xargs echo );
     local TOREMOVE=$(OUTPUT_REMOVED=1 PACKAGES=$REPO_CONTENT perl ${VAGRANT_DIR}/scripts/purge_old_versions.pl );
-    [ -n "${TOREMOVE}" ] && package_remove ${TOREMOVE};
+    [ -n "${TOREMOVE}" ] && let REMOVED+=1 && package_remove ${TOREMOVE}
   done
+
+  [ $REMOVED != 0 ] && generate_repository_metadata
 }
 
 
