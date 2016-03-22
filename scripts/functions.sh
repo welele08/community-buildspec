@@ -254,12 +254,11 @@ automated_build() {
   local REPO_NAME=$1
   local TEMPLOG=$(mktemp)
 
-  export REPOSITORY_NAME=$REPO_NAME
   [ -z "$REPO_NAME" ] && die "You called automated_build() blindly, without a reason, huh?"
   pushd ${VAGRANT_DIR}/repositories/$REPO_NAME
   ### XXX: Libchecks in there!
   send_email "[Community Builder] $NOW Build" "Repository \"${REPO_NAME}\" build started at $NOW"
-  [ -f "build.sh" ] && ./build.sh  1>&2 > $TEMPLOG
+  [ -f "build.sh" ] && env -i REPOSITORY_NAME=$REPO_NAME -- ./build.sh  1>&2 > $TEMPLOG
   mytime=$(date +%s)
   ansifilter $TEMPLOG > "${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log"
   chmod 444 ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log
