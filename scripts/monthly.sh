@@ -22,10 +22,6 @@ done
 
 docker_clean
 
-# yeah, cleanup!
-rm -rfv /tmp/.*
-rm -rfv /tmp/*
-
 # Cleaning docker stuff with hands or eventually it will grow and eat up all the disk.
 # [ -n "${DOCKER_IMAGE}" ] && docker rmi -f ${DOCKER_IMAGE} || docker rmi -f sabayon/builder-amd64
 #
@@ -38,5 +34,8 @@ rm -rfv /tmp/*
 # update crontab
 crontab ${VAGRANT_DIR}/confs/crontab
 
+# yeah, dirty cleanup!
 rm -rf ${DISTFILES}/*
 rm -rf ${ENTROPY_DOWNLOADED_PACKAGES}/*
+rm -rfv /tmp/.*
+rm -rfv /tmp/*
