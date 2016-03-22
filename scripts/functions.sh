@@ -231,6 +231,9 @@ build_all() {
   # Generating metadata
   generate_repository_metadata
 
+  # Cleanup - old cruft/Maintenance
+
+  build_clean
   purge_old_packages
 
   # Deploy repository inside "repositories"
