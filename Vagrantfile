@@ -25,6 +25,8 @@ Vagrant.configure(2) do |config|
     systemctl enable vixie-cron
     systemctl start vixie-cron
     crontab /vagrant/confs/crontab
-    echo "@@@@ Provision finished, ensure everything is set up for deploy ."
+    git clone https://github.com/Sabayon/community.git /vagrant/repositories
+    rm -rf /vagrant/repositories/.git
+    echo "@@@@ Provision finished, ensure everything is set up for deploy, suggestion is to reboot the machine to ensure docker is working correctly"
   SHELL
 end

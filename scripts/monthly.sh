@@ -22,13 +22,18 @@ done
 
 docker_clean
 
-[ -n "${DOCKER_IMAGE}" ] && docker rmi -f ${DOCKER_IMAGE} || docker rmi -f sabayon/builder-amd64
+# yeah, cleanup!
+rm -rfv /tmp/.*
+rm -rfv /tmp/*
 
-systemctl stop docker
-rm -rfv /var/lib/docker
-systemctl start docker
-
-[ -n "${DOCKER_IMAGE}" ] && docker pull ${DOCKER_IMAGE} || docker pull sabayon/builder-amd64
+# Cleaning docker stuff with hands or eventually it will grow and eat up all the disk.
+# [ -n "${DOCKER_IMAGE}" ] && docker rmi -f ${DOCKER_IMAGE} || docker rmi -f sabayon/builder-amd64
+#
+# systemctl stop docker
+# rm -rfv /var/lib/docker
+# systemctl start docker
+#
+# [ -n "${DOCKER_IMAGE}" ] && docker pull ${DOCKER_IMAGE} || docker pull sabayon/builder-amd64
 
 # update crontab
 crontab ${VAGRANT_DIR}/confs/crontab
