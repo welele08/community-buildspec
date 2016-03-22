@@ -43,7 +43,6 @@ update_vagrant_repo() {
   git reset --hard origin/master
   rm -rf ${VAGRANT_DIR}/repositories
   git clone ${COMMUNITY_REPOSITORY_SPECS} ${VAGRANT_DIR}/repositories
-  rm -rf ${VAGRANT_DIR}/repositories/.git
   popd
 }
 
