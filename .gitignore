@@ -3,3 +3,4 @@ artifacts
 confs/env
 confs/key.pub
 confs/private.key
+repositories
