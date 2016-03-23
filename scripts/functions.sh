@@ -91,7 +91,7 @@ system_upgrade() {
   equo u
 
   echo -5 | equo conf update
-  equo cleanup --quick
+  equo cleanup
 }
 
 vagrant_cleanup() {
