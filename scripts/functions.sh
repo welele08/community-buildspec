@@ -258,7 +258,7 @@ automated_build() {
   pushd ${VAGRANT_DIR}/repositories/$REPO_NAME
   ### XXX: Libchecks in there!
   send_email "[Community Builder] $NOW Build" "Repository \"${REPO_NAME}\" build started at $NOW"
-  [ -f "build.sh" ] && env -i REPOSITORY_NAME=$REPO_NAME -- ./build.sh  1>&2 > $TEMPLOG
+  [ -f "build.sh" ] && env -i REPOSITORY_NAME=$REPO_NAME bash build.sh  1>&2 > $TEMPLOG
   mytime=$(date +%s)
   ansifilter $TEMPLOG > "${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log"
   chmod 444 ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log
