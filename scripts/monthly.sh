@@ -3,6 +3,7 @@
 . /vagrant/scripts/functions.sh
 
 system_upgrade
+update_vagrant_repo
 
 ## cleanup
 

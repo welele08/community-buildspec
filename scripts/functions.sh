@@ -10,7 +10,6 @@ NOW=$(date +"%Y-%m-%d")
 DOCKER_COMMIT_IMAGE=${DOCKER_COMMIT_IMAGE:-true}
 CHECK_BUILD_DIFFS=${CHECK_BUILD_DIFFS:-true}
 VAGRANT_DIR="${VAGRANT_DIR:-/vagrant}"
-REPOSITORIES=( $(find ${VAGRANT_DIR}/repositories -maxdepth 1 -type d -printf '%P\n' | grep -v '^\.') )
 
 export DOCKER_OPTS="${DOCKER_OPTS:--t --rm}"
 export DISTFILES="${VAGRANT_DIR}/distfiles"
@@ -38,12 +37,18 @@ fi
 
 die() { echo "$@" 1>&2 ; exit 1; }
 
+update_repositories() {
+  REPOSITORIES=( $(find ${VAGRANT_DIR}/repositories -maxdepth 1 -type d -printf '%P\n' | grep -v '^\.') )
+  export REPOSITORIES
+}
+
 update_vagrant_repo() {
   pushd ${VAGRANT_DIR}
   git fetch --all
   git reset --hard origin/master
   rm -rf ${VAGRANT_DIR}/repositories
   git clone ${COMMUNITY_REPOSITORY_SPECS} ${VAGRANT_DIR}/repositories
+  update_repositories
   popd
 }
 
@@ -270,6 +275,7 @@ automated_build() {
 
 generate_metadata() {
   echo "Generating metadata"
+  update_repositories
   # Generate repository list
   printf "%s\n" "${REPOSITORIES[@]}" > ${VAGRANT_DIR}/artifacts/AVAILABLE_REPOSITORIES
 
