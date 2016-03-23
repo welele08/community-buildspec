@@ -5,7 +5,7 @@ EMAIL_NOTIFICATIONS="${EMAIL_NOTIFICATIONS:-mudler@sabayon.org}"
 MAILGUN_API_KEY="${MAILGUN_API_KEY}"
 MAILGUN_DOMAIN_NAME="${MAILGUN_DOMAIN_NAME}"
 MAILGUN_FROM="${MAILGUN_FROM:-Excited User <mailgun\@$MAILGUN_DOMAIN_NAME\>}"
-NOW=$(date +"%Y-%m-%d")
+
 
 DOCKER_COMMIT_IMAGE=${DOCKER_COMMIT_IMAGE:-true}
 CHECK_BUILD_DIFFS=${CHECK_BUILD_DIFFS:-true}
@@ -87,9 +87,7 @@ system_upgrade() {
   # upgrade
   rsync -av -H -A -X --delete-during "rsync://rsync.at.gentoo.org/gentoo-portage/licenses/" "/usr/portage/licenses/"
   ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
-  equo up
-  equo u
-
+  equo up && equo u
   echo -5 | equo conf update
   equo cleanup
 }
@@ -169,7 +167,6 @@ build_all() {
       docker pull "$DOCKER_IMAGE"
     fi
 
-    #XXX: tag from DOCKER_IMAGE if not already tagged.
     if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
       echo "[*] A tagged image already exists"
     else
@@ -259,12 +256,15 @@ package_remove() {
 automated_build() {
   local REPO_NAME=$1
   local TEMPLOG=$(mktemp)
-
   [ -z "$REPO_NAME" ] && die "You called automated_build() blindly, without a reason, huh?"
   pushd ${VAGRANT_DIR}/repositories/$REPO_NAME
   ### XXX: Libchecks in there!
   send_email "[Community Builder] $NOW Build" "Repository \"${REPO_NAME}\" build started at $NOW"
-  [ -f "build.sh" ] && env -i REPOSITORY_NAME=$REPO_NAME bash build.sh  1>&2 > $TEMPLOG
+  env -i REPO_NAME=$REPO_NAME REPOSITORIES=$REPOSITORIES TEMPLOG=$TEMPLOG /bin/bash -c "
+  [ -f \"build.spec\" ] && . build.spec;
+  { build_all \"\${BUILD_ARGS[@]}\";} 1>&2 > \$TEMPLOG "
+  NOW=$(date +"%Y-%m-%d")
+  [ ! -d "${VAGRANT_DIR}/logs/$NOW" ] && mkdir -p ${VAGRANT_DIR}/logs/$NOW && chmod -R 444 ${VAGRANT_DIR}/logs/$NOW
   mytime=$(date +%s)
   ansifilter $TEMPLOG > "${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log"
   chmod 444 ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log
