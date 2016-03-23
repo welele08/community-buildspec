@@ -10,6 +10,7 @@ export DOCKER_PULL_IMAGE=0
 mkdir -p ${VAGRANT_DIR}/logs/$NOW
 chmod -R 444 ${VAGRANT_DIR}/logs/$NOW
 update_vagrant_repo
+system_upgrade
 
 for i in "${REPOSITORIES[@]}"
 do
