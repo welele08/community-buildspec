@@ -16,7 +16,8 @@ Vagrant.configure(2) do |config|
 
     equo up && sudo equo u
     echo -5 | equo conf update
-    equo i docker sabayon-devkit vixie-cron git wget curl ansifilter md5deep dev-perl/JSON dev-perl/libwww-perl
+    equo i docker sabayon-devkit vixie-cron git wget curl ansifilter md5deep dev-perl/JSON dev-perl/libwww-perl dev-python/pip
+    pip install shyaml
 
     systemctl enable docker
     systemctl start docker

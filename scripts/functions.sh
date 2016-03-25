@@ -253,16 +253,56 @@ package_remove() {
   OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-remove "$@"
 }
 
+load_env_from_yaml() {
+  local YAML_FILE=$1
+
+  export REPOSITORY_DESCRIPTION=$(cat $YAML_FILE | shyaml get-value repository.description $REPOSITORY_DESCRIPTION)  # REPOSITORY_DESCRIPTION
+  export KEEP_PREVIOUS_VERSIONS=$(cat $YAML_FILE | shyaml get-value repository.maintenance.keep_previous_versions $KEEP_PREVIOUS_VERSIONS) # KEEP_PREVIOUS_VERSIONS
+  cat $YAML_FILE | shyaml get-values repository.maintenance.remove &>/dev/null && export TOREMOVE="$(cat $YAML_FILE | shyaml get-values repository.maintenance.remove | xargs echo)" # replaces package_remove
+  export CLEAN_CACHE=$(cat $YAML_FILE | shyaml get-value repository.maintenance.clean_cache $CLEAN_CACHE) # CLEAN_CACHE
+
+  # recompose our BUILD_ARGS
+  cat $YAML_FILE | shyaml get-values build.target &>/dev/null && BUILD_ARGS="$(cat $YAML_FILE | shyaml get-values build.target | xargs echo)"  #mixed toinstall BUILD_ARGS
+  cat $YAML_FILE | shyaml get-values build.overlays &>/dev/null && BUILD_ARGS="${BUILD_ARGS} --layman $(cat $YAML_FILE | shyaml get-values build.overlays | xargs echo)" #--layman options
+  cat $YAML_FILE | shyaml get-values build.equo.package.install &>/dev/null && BUILD_ARGS+="${BUILD_ARGS} --install $(cat $YAML_FILE | shyaml get-values build.equo.package.install | xargs echo)"  #mixed --install BUILD_ARGS
+  cat $YAML_FILE | shyaml get-values build.equo.package.remove &>/dev/null && BUILD_ARGS+="${BUILD_ARGS} --remove $(cat $YAML_FILE | shyaml get-values build.equo.package.remove | xargs echo)"  #mixed --remove BUILD_ARGS
+  export BUILD_ARGS
+
+  export DOCKER_IMAGE=$(cat $YAML_FILE | shyaml get-value build.docker.image $DOCKER_IMAGE) # DOCKER_IMAGE
+  export DOCKER_EIT_IMAGE=$(cat $YAML_FILE | shyaml get-value build.docker.entropy_image $DOCKER_EIT_IMAGE) # DOCKER_EIT_IMAGE
+  export EMERGE_DEFAULTS_ARGS=$(cat $YAML_FILE | shyaml get-value build.emerge.default_args $EMERGE_DEFAULTS_ARGS) # EMERGE_DEFAULTS_ARGS
+  export EMERGE_SPLIT_INSTALL=$(cat $YAML_FILE | shyaml get-value build.emerge.split_install $EMERGE_SPLIT_INSTALL) # EMERGE_SPLIT_INSTALL
+  export FEATURES=$(cat $YAML_FILE | shyaml get-value build.emerge.features $FEATURES) # FEATURES
+  export BUILDER_PROFILE=$(cat $YAML_FILE | shyaml get-value build.emerge.profile $BUILDER_PROFILE) # BUILDER_PROFILE
+  export BUILDER_JOBS=$(cat $YAML_FILE | shyaml get-value build.emerge.jobs $YAML_FILE) # BUILDER_JOBS
+  export PRESERVED_REBUILD=$(cat $YAML_FILE | shyaml get-value build.emerge.preserved_rebuild $PRESERVED_REBUILD) # PRESERVED_REBUILD
+  export SKIP_PORTAGE_SYNC=$(cat $YAML_FILE | shyaml get-value build.emerge.skip_sync $SKIP_PORTAGE_SYNC) # SKIP_PORTAGE_SYNC
+  export WEBRSYNC=$(cat $YAML_FILE | shyaml get-value build.emerge.webrsync $WEBRSYNC) # WEBRSYNC
+  export REMOTE_OVERLAY=$(cat $YAML_FILE | shyaml get-value build.emerge.remote_overlay $REMOTE_OVERLAY) # REMOTE_OVERLAY
+  export ENTROPY_REPOSITORY=$(cat $YAML_FILE | shyaml get-value build.equo.repository $ENTROPY_REPOSITORY) # ENTROPY_REPOSITORY
+  export USE_EQUO=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.enable $USE_EQUO) # USE_EQUO
+  export EQUO_INSTALL_ATOMS=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.install_atoms $EQUO_INSTALL_ATOMS) # EQUO_INSTALL_ATOMS
+
+  export DEPENDENCY_SCAN_DEPTH=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.dependency_scan_depth $DEPENDENCY_SCAN_DEPTH) # DEPENDENCY_SCAN_DEPTH
+  export EQUO_INSTALL_VERSION=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.install_version $EQUO_INSTALL_VERSION) # EQUO_INSTALL_VERSION
+  export EQUO_SPLIT_INSTALL=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.split_install $EQUO_SPLIT_INSTALL) # EQUO_SPLIT_INSTALL
+
+}
+
 automated_build() {
   local REPO_NAME=$1
   local TEMPLOG=$(mktemp)
   [ -z "$REPO_NAME" ] && die "You called automated_build() blindly, without a reason, huh?"
   pushd ${VAGRANT_DIR}/repositories/$REPO_NAME
   ### XXX: Libchecks in there!
-  send_email "[Community Builder] $NOW Build" "Repository \"${REPO_NAME}\" build started at $NOW"
+  #send_email "[Community Builder] " "Repository \"${REPO_NAME}\" build started at $NOW"
+
   env -i REPO_NAME=$REPO_NAME REPOSITORIES=$REPOSITORIES TEMPLOG=$TEMPLOG /bin/bash -c "
-  [ -f \"build.spec\" ] && . build.spec;
-  { build_all \"\${BUILD_ARGS[@]}\";} 1>&2 > \$TEMPLOG "
+  . /vagrant/scripts/functions.sh
+  load_env_from_yaml \"build.yaml\"
+  [ -n \"\${TOREMOVE}\" ] && package_remove \${TOREMOVE}
+
+  { build_all \"\$BUILD_ARGS\"; } 1>&2 > \$TEMPLOG "
   NOW=$(date +"%Y-%m-%d")
   [ ! -d "${VAGRANT_DIR}/logs/$NOW" ] && mkdir -p ${VAGRANT_DIR}/logs/$NOW && chmod -R 444 ${VAGRANT_DIR}/logs/$NOW
   mytime=$(date +%s)
