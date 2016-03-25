@@ -280,6 +280,7 @@ load_env_from_yaml() {
   cat $YAML_FILE | shyaml get-value build.emerge.webrsync  &>/dev/null && export WEBRSYNC=$(cat $YAML_FILE | shyaml get-value build.emerge.webrsync) # WEBRSYNC
   cat $YAML_FILE | shyaml get-value build.emerge.remote_overlay  &>/dev/null && export REMOTE_OVERLAY=$(cat $YAML_FILE | shyaml get-value build.emerge.remote_overlay) # REMOTE_OVERLAY
 
+  cat $YAML_FILE | shyaml get-value build.equo.repositories  &>/dev/null && export ENMAN_REPOSITORIES=$(cat $YAML_FILE | shyaml get-values build.equo.repositories) # ENMAN_REPOSITORIES
   cat $YAML_FILE | shyaml get-value build.equo.repository  &>/dev/null && export ENTROPY_REPOSITORY=$(cat $YAML_FILE | shyaml get-value build.equo.repository) # ENTROPY_REPOSITORY
   cat $YAML_FILE | shyaml get-value build.equo.dependency_install.enable  &>/dev/null && export USE_EQUO=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.enable) # USE_EQUO
   cat $YAML_FILE | shyaml get-value build.equo.dependency_install.install_atoms  &>/dev/null && export EQUO_INSTALL_ATOMS=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.install_atoms) # EQUO_INSTALL_ATOMS
