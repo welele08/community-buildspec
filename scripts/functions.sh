@@ -150,7 +150,7 @@ build_all() {
   local DOCKER_IMAGE="${DOCKER_IMAGE:-sabayon/builder-amd64}"
   local DOCKER_TAGGED_IMAGE="${DOCKER_IMAGE}-$REPOSITORY_NAME"
 
-  if  [ $CLEAN_CACHE -eq 1 ] &&
+  if [ -n "$CLEAN_CACHE" ] && [ "$CLEAN_CACHE" -eq 1 ] &&
       [ "$DOCKER_COMMIT_IMAGE" = true ]; then
     if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
       docker rmi -f "$DOCKER_TAGGED_IMAGE"
@@ -262,10 +262,10 @@ load_env_from_yaml() {
   cat $YAML_FILE | shyaml get-value repository.maintenance.clean_cache  &>/dev/null && export CLEAN_CACHE=$(cat $YAML_FILE | shyaml get-value repository.maintenance.clean_cache) # CLEAN_CACHE
 
   # recompose our BUILD_ARGS
-  cat $YAML_FILE | shyaml get-values build.target && BUILD_ARGS="$(cat $YAML_FILE | shyaml get-values build.target | xargs echo)"  #mixed toinstall BUILD_ARGS
-  cat $YAML_FILE | shyaml get-values build.overlays && BUILD_ARGS="${BUILD_ARGS} --layman $(cat $YAML_FILE | shyaml get-values build.overlays | xargs echo)" #--layman options
-  cat $YAML_FILE | shyaml get-values build.equo.package.install && BUILD_ARGS+="${BUILD_ARGS} --install $(cat $YAML_FILE | shyaml get-values build.equo.package.install | xargs echo)"  #mixed --install BUILD_ARGS
-  cat $YAML_FILE | shyaml get-values build.equo.package.remove && BUILD_ARGS+="${BUILD_ARGS} --remove $(cat $YAML_FILE | shyaml get-values build.equo.package.remove | xargs echo)"  #mixed --remove BUILD_ARGS
+  cat $YAML_FILE | shyaml get-values build.target &>/dev/null && BUILD_ARGS="$(cat $YAML_FILE | shyaml get-values build.target | xargs echo)"  #mixed toinstall BUILD_ARGS
+  cat $YAML_FILE | shyaml get-values build.overlays &>/dev/null && BUILD_ARGS="${BUILD_ARGS} --layman $(cat $YAML_FILE | shyaml get-values build.overlays | xargs echo)" #--layman options
+  cat $YAML_FILE | shyaml get-values build.equo.package.install &>/dev/null && BUILD_ARGS+="${BUILD_ARGS} --install $(cat $YAML_FILE | shyaml get-values build.equo.package.install | xargs echo)"  #mixed --install BUILD_ARGS
+  cat $YAML_FILE | shyaml get-values build.equo.package.remove &>/dev/null && BUILD_ARGS+="${BUILD_ARGS} --remove $(cat $YAML_FILE | shyaml get-values build.equo.package.remove | xargs echo)"  #mixed --remove BUILD_ARGS
   export BUILD_ARGS
 
   cat $YAML_FILE | shyaml get-value build.docker.image  &>/dev/null && export DOCKER_IMAGE=$(cat $YAML_FILE | shyaml get-value build.docker.image) # DOCKER_IMAGE
