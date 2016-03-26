@@ -24,7 +24,7 @@ export PUBKEY="${PUBKEY:-${VAGRANT_DIR}/confs/key.pub}"
 export COMMUNITY_REPOSITORY_SPECS="${COMMUNITY_REPOSITORY_SPECS:-https://github.com/Sabayon/community-repositories.git}"
 export ARCHES="amd64"
 export KEEP_PREVIOUS_VERSIONS=1 #you can override this in build.sh
-export EMERGE_SPLIT_INSTALL=1 #by default split emerge installation
+export EMERGE_SPLIT_INSTALL=0 #by default don't split emerge installation
 
 URI_BASE="${URI_BASE:-http://mirror.de.sabayon.org/community/}"
 
