@@ -21,12 +21,13 @@ Vagrant.configure(2) do |config|
 
     systemctl enable docker
     systemctl start docker
-
+    
     systemctl daemon-reload
     systemctl enable vixie-cron
     systemctl start vixie-cron
     crontab /vagrant/confs/crontab
     git clone https://github.com/Sabayon/community-repositories.git /vagrant/repositories
+    timedatectl set-ntp true
     echo "@@@@ Provision finished, ensure everything is set up for deploy, suggestion is to reboot the machine to ensure docker is working correctly"
   SHELL
 end
