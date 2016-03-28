@@ -19,10 +19,17 @@ Vagrant.configure(2) do |config|
     equo i docker sabayon-devkit vixie-cron git wget curl ansifilter md5deep dev-perl/JSON dev-perl/libwww-perl dev-python/pip
     pip install shyaml
 
+    mkdir /etc/systemd/system/docker.service.d/
+    echo "[Service]
+ExecStart=
+ExecStart=/usr/bin/docker daemon -H fd:// -g /vagrant/docker_cache/
+" > /etc/systemd/system/docker.service.d/vagrant_mount.conf
+
+    systemctl daemon-reload
+
     systemctl enable docker
     systemctl start docker
-    
-    systemctl daemon-reload
+
     systemctl enable vixie-cron
     systemctl start vixie-cron
     crontab /vagrant/confs/crontab
