@@ -286,6 +286,7 @@ load_env_from_yaml() {
   cat $YAML_FILE | shyaml get-value build.equo.dependency_install.install_atoms  &>/dev/null && export EQUO_INSTALL_ATOMS=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.install_atoms) # EQUO_INSTALL_ATOMS
 
   cat $YAML_FILE | shyaml get-value build.equo.dependency_install.dependency_scan_depth  &>/dev/null && export DEPENDENCY_SCAN_DEPTH=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.dependency_scan_depth) # DEPENDENCY_SCAN_DEPTH
+  cat $YAML_FILE | shyaml get-value build.euqo.dependency_install.prune_virtuals &>/dev/null && export PRUNE_VIRTUALS # PRUNE_VIRTUALS
   cat $YAML_FILE | shyaml get-value build.equo.dependency_install.install_version  &>/dev/null && export EQUO_INSTALL_VERSION=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.install_version) # EQUO_INSTALL_VERSION
   cat $YAML_FILE | shyaml get-value build.equo.dependency_install.split_install  &>/dev/null && export EQUO_SPLIT_INSTALL=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.split_install) # EQUO_SPLIT_INSTALL
 }
