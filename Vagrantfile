@@ -37,6 +37,7 @@ ExecStart=/usr/bin/docker daemon --storage-driver=btrfs -H fd://
       echo "BTRFS image locally detected, using it"
       losetup /dev/loop0 /vagrant/btrfs.img
     fi
+    mkdir /var/lib/docker
     mount /dev/loop0 /var/lib/docker
     echo "/vagrant/btrfs.img /var/lib/docker btrfs loop 0 0" >> /etc/fstab
 
