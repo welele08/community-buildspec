@@ -3,6 +3,7 @@
 Do your changes (if any), and then just use
 
 ```
+vagrant plugin install vagrant-persistent-storage
 vagrant up
 # follow up the message on screen after provisioning procedure
 
