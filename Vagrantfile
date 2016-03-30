@@ -65,6 +65,7 @@ ExecStart=/usr/bin/docker daemon --storage-driver=devicemapper --storage-opt dm.
   config.vm.provision :shell, run: "always", inline: <<-SHELL
   vgscan
   vgchange -a y
+  systemctl restart docker
   SHELL
 
 
