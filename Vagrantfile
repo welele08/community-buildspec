@@ -12,24 +12,8 @@ Vagrant.configure(2) do |config|
   config.persistent_storage.enabled = true
   config.persistent_storage.location = './docker_disk.vdi'
   config.persistent_storage.size = 210000
-  config.persistent_storage.format = false
-  config.persistent_storage.use_lvm = false
-
-  config.vm.provision "shell", inline: <<-SHELL
-set -e
-set -x
-if [ -f /etc/provision_env_disk_added_date ]
-then
-  echo "Provision runtime already done."
-  exit 0
-fi
-dd if=/dev/zero of=/dev/sdb bs=512 count=1 conv=notrunc
-sudo pvcreate /dev/sdb
-vgcreate vg-docker /dev/sdb
-sudo lvcreate -L 190G -n data vg-docker
-sudo lvcreate -L 9G -n metadata vg-docker
-date > /etc/provision_env_disk_added_date
- SHELL
+  config.persistent_storage.volgroupname = "docker"
+  config.persistent_storage.mountname = "pool"
 
   config.vm.provision "shell", inline: <<-SHELL
     mkdir -p /usr/portage/licenses/
@@ -44,7 +28,7 @@ date > /etc/provision_env_disk_added_date
     mkdir /etc/systemd/system/docker.service.d/
     echo "[Service]
 ExecStart=
-ExecStart=/usr/bin/docker daemon --storage-driver=devicemapper --storage-opt dm.datadev=/dev/vg-docker/data --storage-opt dm.metadatadev=/dev/vg-docker/metadata -H fd://
+ExecStart=/usr/bin/docker daemon --storage-driver=devicemapper --storage-opt dm.thinpooldev=/dev/docker-vg1/pool --storage-opt dm.basesize=200G -H fd://
 " > /etc/systemd/system/docker.service.d/vagrant_mount.conf
     # append -g /vagrant/docker_cache/ to args to specify a default location
 
@@ -60,12 +44,6 @@ ExecStart=/usr/bin/docker daemon --storage-driver=devicemapper --storage-opt dm.
     [ ! -d /vagrant/repositories ] && git clone https://github.com/Sabayon/community-repositories.git /vagrant/repositories
     timedatectl set-ntp true
     echo "@@@@ Provision finished, ensure everything is set up for deploy, suggestion is to reboot the machine to ensure docker is working correctly"
-  SHELL
-
-  config.vm.provision :shell, run: "always", inline: <<-SHELL
-  vgscan
-  vgchange -a y
-  systemctl restart docker
   SHELL
 
 
