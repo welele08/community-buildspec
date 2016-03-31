@@ -20,6 +20,8 @@ config.vm.provision "shell", inline: <<-SHELL
   set -x
   if [ -f /etc/provision_env_disk_added_date ]
   then
+   vgscan
+   vgchange -a y
    echo "Provision runtime already done."
    exit 0
   fi
@@ -58,7 +60,6 @@ config.vm.provision "shell", inline: <<-SHELL
 ExecStart=
 ExecStart=/usr/bin/docker daemon --storage-driver=devicemapper --storage-opt dm.thinpooldev=${POOL_DEVICE_PATH} --storage-opt dm.basesize=200G -H fd://
   " > /etc/systemd/system/docker.service.d/vagrant_mount.conf
-  # append -g /vagrant/docker_cache/ to args to specify a default location
 
 
   systemctl daemon-reload
