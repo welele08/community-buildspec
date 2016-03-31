@@ -29,7 +29,7 @@ config.vm.provision "shell", inline: <<-SHELL
   lvcreate -n datapool -L 190G vg-docker
   lvcreate -n metapool -L 10 vg-docker
 
-  lvconvert -y --thinpool vg-docker/datapool --poolmetadata vg-docker/metapool
+  lvconvert -y --zero n --thinpool vg-docker/datapool --poolmetadata vg-docker/metapool
 
   date > /etc/provision_env_disk_added_date
 SHELL
