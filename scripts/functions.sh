@@ -300,7 +300,7 @@ automated_build() {
   pushd ${VAGRANT_DIR}/repositories/$REPO_NAME
   ### XXX: Libchecks in there!
 
-  env -i REPO_NAME=$REPO_NAME REPOSITORIES=$REPOSITORIES TEMPLOG=$TEMPLOG /bin/bash -c "
+  env -i REPOSITORY_NAME=$REPO_NAME REPOSITORIES=$REPOSITORIES TEMPLOG=$TEMPLOG /bin/bash -c "
   . /vagrant/scripts/functions.sh
   load_env_from_yaml \"build.yaml\"
   [ -n \"\${TOREMOVE}\" ] && package_remove \${TOREMOVE}
