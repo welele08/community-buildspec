@@ -38,7 +38,7 @@ fi
 die() { echo "$@" 1>&2 ; exit 1; }
 
 update_repositories() {
-  REPOSITORIES=( $(find ${VAGRANT_DIR}/repositories -maxdepth 1 -type d -printf '%P\n' | grep -v '^\.') )
+  REPOSITORIES=( $(find ${VAGRANT_DIR}/repositories -maxdepth 1 -type d -printf '%P\n' | grep -v '^\.' | sort) )
   export REPOSITORIES
 }
 
