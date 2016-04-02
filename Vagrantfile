@@ -1,5 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
+file_to_disk='./docker_disk.vdi'
 Vagrant.configure(2) do |config|
   config.vm.box = "Sabayon/spinbase-amd64"
   config.vm.provider "virtualbox" do |vb|
@@ -10,11 +11,11 @@ Vagrant.configure(2) do |config|
   end
 
 config.persistent_storage.enabled = true
-config.persistent_storage.location = './docker_disk.vdi'
+config.persistent_storage.location = file_to_disk
 config.persistent_storage.size = 210000
 config.persistent_storage.format = false
 config.persistent_storage.use_lvm = false
-
+unless File.exist?(file_to_disk)
 config.vm.provision "shell", inline: <<-SHELL
   set -e
   set -x
@@ -35,6 +36,7 @@ config.vm.provision "shell", inline: <<-SHELL
 
   date > /etc/provision_env_disk_added_date
 SHELL
+end
 
 config.vm.provision "shell", inline: <<-SHELL
   mkdir -p /usr/portage/licenses/
