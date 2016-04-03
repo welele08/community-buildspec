@@ -8,6 +8,7 @@ Vagrant.configure(2) do |config|
      vb.gui = false
      vb.memory = "6096"
      vb.cpus = 3
+     vb.customize ["modifyvm", :id, "--ioapic", "on"]
   end
 
 config.persistent_storage.enabled = true
@@ -39,8 +40,10 @@ SHELL
 end
 
 config.vm.provision "shell", inline: <<-SHELL
-vgscan
-vgchange -a y
+  systemctl start lvm2-lvmetad
+  systemctl enable lvm2-lvmetad
+  vgscan
+  vgchange -a y
   mkdir -p /usr/portage/licenses/
   rsync -av -H -A -X --delete-during "rsync://rsync.at.gentoo.org/gentoo-portage/licenses/" "/usr/portage/licenses/"
   ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
