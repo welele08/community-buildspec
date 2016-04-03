@@ -40,8 +40,6 @@ SHELL
 end
 
 config.vm.provision "shell", inline: <<-SHELL
-  systemctl start lvm2-lvmetad
-  systemctl enable lvm2-lvmetad
   vgscan
   vgchange -a y
   mkdir -p /usr/portage/licenses/
