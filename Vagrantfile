@@ -66,7 +66,7 @@ ExecStart=
 ExecStart=/usr/bin/docker daemon --storage-driver=devicemapper --storage-opt dm.thinpooldev=${POOL_DEVICE_PATH} --storage-opt dm.basesize=200G -H fd://
   " > /etc/systemd/system/docker.service.d/vagrant_mount.conf
 
-
+  cp -rfv /vagrant/confs/rsyncd.conf /etc/rsyncd.conf
   systemctl daemon-reload
 
   systemctl enable docker
@@ -74,6 +74,10 @@ ExecStart=/usr/bin/docker daemon --storage-driver=devicemapper --storage-opt dm.
 
   systemctl enable vixie-cron
   systemctl start vixie-cron
+
+  systemctl enable rsyncd
+  systemctl start rsyncd
+
   crontab /vagrant/confs/crontab
   [ ! -d /vagrant/repositories ] && git clone https://github.com/Sabayon/community-repositories.git /vagrant/repositories
   timedatectl set-ntp true
