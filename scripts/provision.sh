@@ -38,6 +38,9 @@ systemctl start vixie-cron
 systemctl enable rsyncd
 systemctl start rsyncd
 
+ystemctl start lvm2-monitor.service
+systemctl enable lvm2-monitor.service
+
 crontab /vagrant/confs/crontab
 [ ! -d /vagrant/repositories ] && git clone https://github.com/Sabayon/community-repositories.git /vagrant/repositories
 timedatectl set-ntp true
