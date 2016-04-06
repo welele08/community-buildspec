@@ -38,7 +38,7 @@ systemctl start vixie-cron
 systemctl enable rsyncd
 systemctl start rsyncd
 
-ystemctl start lvm2-monitor.service
+systemctl start lvm2-monitor.service
 systemctl enable lvm2-monitor.service
 
 crontab /vagrant/confs/crontab
