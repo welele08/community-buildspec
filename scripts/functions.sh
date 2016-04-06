@@ -25,6 +25,9 @@ export COMMUNITY_REPOSITORY_SPECS="${COMMUNITY_REPOSITORY_SPECS:-https://github.
 export ARCHES="amd64"
 export KEEP_PREVIOUS_VERSIONS=1 #you can override this in build.sh
 export EMERGE_SPLIT_INSTALL=0 #by default don't split emerge installation
+#Irc configs, optional.
+export IRC_IDENT="${IRC_IDENT:-bot sabayon scr builder}"
+export IRC_NICK="${IRC_NICK:-SCRBuilder}"
 
 URI_BASE="${URI_BASE:-http://mirror.de.sabayon.org/community/}"
 
@@ -52,21 +55,15 @@ update_vagrant_repo() {
   popd
 }
 
-send_email() {
+irc_msg() {
 
-  local SUBJECT="${1:-Report}"
-  local TEXT="${2:-Something went wrong}"
+  local IRC_MESSAGE="${1}"
 
-  [ -z "$MAILGUN_API_KEY" ] && die "You have to set MAILGUN for error reporting"
-  [ -z "$MAILGUN_DOMAIN_NAME" ] && die "You have to set MAILGUN for error reporting"
-  [ -z "$MAILGUN_FROM" ] && die "You have to set MAILGUN for error reporting"
+  [ -z "$IRC_MESSAGE" ] && return 1
+  [ -z "$IRC_CHANNEL" ] && return 1
 
-  curl -s --user "api:${MAILGUN_API_KEY}" \
-  https://api.mailgun.net/v3/"$MAILGUN_DOMAIN_NAME"/messages \
-  -F from="$MAILGUN_FROM" \
-  -F to="$EMAIL_NOTIFICATIONS" \
-  -F subject="$SUBJECT" \
-  -F text="$TEXT"
+echo -e "USER ${IRC_IDENT}\nNICK ${IRC_NICK}\nJOIN ${IRC_CHANNEL}\nPRIVMSG ${IRC_CHANNEL} :${IRC_MESSAGE}\nQUIT\n" \
+ | nc irc.freenode.net 6667
 
 }
 
@@ -299,7 +296,7 @@ automated_build() {
   [ -z "$REPO_NAME" ] && die "You called automated_build() blindly, without a reason, huh?"
   pushd ${VAGRANT_DIR}/repositories/$REPO_NAME
   ### XXX: Libchecks in there!
-
+  irc_msg "Repository \"${REPO_NAME}\" build starting."
   env -i REPOSITORY_NAME=$REPO_NAME REPOSITORIES=$REPOSITORIES TEMPLOG=$TEMPLOG /bin/bash -c "
   . /vagrant/scripts/functions.sh
   load_env_from_yaml \"build.yaml\"
@@ -311,7 +308,7 @@ automated_build() {
   mytime=$(date +%s)
   ansifilter $TEMPLOG > "${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log"
   chmod 444 ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log
-  send_email "[Community Builder] $NOW Build" "Repository \"${REPO_NAME}\" build completed. Log is available at: ${URI_BASE}/logs/$NOW/$REPO_NAME.$mytime.log"
+  irc_msg "Repository \"${REPO_NAME}\" build completed. Log is available at: ${URI_BASE}/logs/$NOW/$REPO_NAME.$mytime.log"
   popd
   rm -rf $TEMPLOG
 }

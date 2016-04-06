@@ -8,7 +8,7 @@ ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
 
 equo up && sudo equo u
 echo -5 | equo conf update
-equo i docker sabayon-devkit vixie-cron git wget curl ansifilter md5deep dev-perl/JSON dev-perl/libwww-perl dev-python/pip sys-fs/btrfs-progs sys-apps/util-linux
+equo i docker sabayon-devkit vixie-cron git wget curl ansifilter md5deep dev-perl/JSON dev-perl/libwww-perl dev-python/pip sys-fs/btrfs-progs sys-apps/util-linux net-analyzer/netcat6
 pip install shyaml
 
 
