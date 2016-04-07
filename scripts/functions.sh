@@ -82,10 +82,11 @@ deploy() {
 
 system_upgrade() {
   # upgrade
-  rsync -av -H -A -X --delete-during "rsync://rsync.at.gentoo.org/gentoo-portage/licenses/" "/usr/portage/licenses/"
-  ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
-  equo up && equo u
-  echo -5 | equo conf update
+  # rsync -av -H -A -X --delete-during "rsync://rsync.at.gentoo.org/gentoo-portage/licenses/" "/usr/portage/licenses/"
+  # ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
+  # equo up && equo u
+  # echo -5 | equo conf update
+  bash ${VAGRANT_DIR}/scripts/provision.sh || true # best-effort, it does not invalidate container states at all.
   equo cleanup
 }
 
@@ -304,10 +305,10 @@ automated_build() {
 
   { build_all \"\$BUILD_ARGS\"; } 1>&2 > \$TEMPLOG "
   NOW=$(date +"%Y-%m-%d")
-  [ ! -d "${VAGRANT_DIR}/logs/$NOW" ] && mkdir -p ${VAGRANT_DIR}/logs/$NOW && chmod -R 444 ${VAGRANT_DIR}/logs/$NOW
+  [ ! -d "${VAGRANT_DIR}/logs/$NOW" ] && mkdir -p ${VAGRANT_DIR}/logs/$NOW && chmod -R 755 ${VAGRANT_DIR}/logs/$NOW
   mytime=$(date +%s)
   ansifilter $TEMPLOG > "${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log"
-  chmod 444 ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log
+  chmod 755 ${VAGRANT_DIR}/logs/$NOW/$REPO_NAME.$mytime.log
   irc_msg "Repository \"${REPO_NAME}\" build completed. Log is available at: ${URI_BASE}/logs/$NOW/$REPO_NAME.$mytime.log"
   popd
   rm -rf $TEMPLOG

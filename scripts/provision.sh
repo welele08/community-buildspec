@@ -8,7 +8,11 @@ ls /usr/portage/licenses -1 | xargs -0 > /etc/entropy/packages/license.accept
 
 equo up && sudo equo u
 echo -5 | equo conf update
-equo i docker sabayon-devkit vixie-cron git wget curl ansifilter md5deep dev-perl/JSON dev-perl/libwww-perl dev-python/pip sys-fs/btrfs-progs sys-apps/util-linux net-analyzer/netcat6
+equo i docker sabayon-devkit vixie-cron git wget curl ansifilter md5deep \
+dev-perl/JSON dev-perl/libwww-perl dev-python/pip \
+sys-fs/btrfs-progs sys-apps/util-linux net-analyzer/netcat6 \
+www-servers/nginx
+
 pip install shyaml
 
 
@@ -27,6 +31,8 @@ ExecStart=/usr/bin/docker daemon --storage-driver=devicemapper --storage-opt dm.
 " > /etc/systemd/system/docker.service.d/vagrant_mount.conf
 
 cp -rfv /vagrant/confs/rsyncd.conf /etc/rsyncd.conf
+cp -rfv /vagrant/confs/nginx.conf /etc/nginx/nginx.conf
+
 systemctl daemon-reload
 
 systemctl enable docker
@@ -38,10 +44,18 @@ systemctl start vixie-cron
 systemctl enable rsyncd
 systemctl start rsyncd
 
+systemctl enable nginx
+systemctl start nginx
+
 systemctl start lvm2-monitor.service
 systemctl enable lvm2-monitor.service
 
 crontab /vagrant/confs/crontab
 [ ! -d /vagrant/repositories ] && git clone https://github.com/Sabayon/community-repositories.git /vagrant/repositories
+[ ! -d /vagrant/artifacts ] && mkdir -p /vagrant/artifacts
+[ ! -d /vagrant/logs ] && mkdir -p /vagrant/artifacts
+[ -d /vagrant/artifacts ] && chown -R nginx /vagrant/artifacts && chmod -R 755 /vagrant/artifacts
+[ -d /vagrant/logs ] && chown -R nginx /vagrant/logs && chmod -R 755 /vagrant/logs
+
 timedatectl set-ntp true
-  echo "@@@@ Provision finished, ensure everything is set up for deploy, suggestion is to reboot the machine to ensure docker is working correctly"
+echo "@@@@ Provision finished, ensure everything is set up for deploy, suggestion is to reboot the machine to ensure docker is working correctly"
