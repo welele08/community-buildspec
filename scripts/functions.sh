@@ -255,6 +255,7 @@ build_all() {
       docker tag "$DOCKER_EIT_IMAGE" "$DOCKER_EIT_TAGGED_IMAGE"
     fi
     export DOCKER_EIT_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
+    export DOCKER_IMAGE="${DOCKER_EIT_IMAGE}"
   fi
   #end Tag and create cache image if needed of eit container
 
@@ -271,7 +272,7 @@ build_all() {
   generate_repository_metadata
 
   # Cleanup - old cruft/Maintenance
-
+  unset DOCKER_IMAGE
   build_clean
   purge_old_packages
 
