@@ -148,6 +148,11 @@ build_all() {
   local DOCKER_IMAGE="${DOCKER_IMAGE:-sabayon/builder-amd64}"
   local DOCKER_TAGGED_IMAGE="${DOCKER_IMAGE}-$REPOSITORY_NAME"
 
+  local DOCKER_EIT_IMAGE="${DOCKER_EIT_IMAGE:-sabayon/eit-amd64}"
+  local DOCKER_EIT_TAGGED_IMAGE="${DOCKER_EIT_IMAGE}-$REPOSITORY_NAME"
+
+
+  # Tag and create cache image if needed
   if [ -n "$CLEAN_CACHE" ] && [ "$CLEAN_CACHE" -eq 1 ] &&
       [ "$DOCKER_COMMIT_IMAGE" = true ]; then
     if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
@@ -172,6 +177,7 @@ build_all() {
     fi
     DOCKER_IMAGE=$DOCKER_TAGGED_IMAGE
   fi
+  #end Tag and create cache image if needed
 
   local OLD_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
   local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
@@ -223,8 +229,37 @@ build_all() {
   fi
 
   unset DOCKER_IMAGE
+
+  # Caching also Eit images
+
+  if [ -n "$CLEAN_CACHE" ] && [ "$CLEAN_CACHE" -eq 1 ] &&
+      [ "$DOCKER_COMMIT_IMAGE" = true ]; then
+    if docker images | grep -q "$DOCKER_EIT_TAGGED_IMAGE"; then
+      docker rmi -f "$DOCKER_EIT_TAGGED_IMAGE"
+    fi
+    docker pull "$DOCKER_EIT_IMAGE"
+    docker tag "$DOCKER_EIT_IMAGE" "$DOCKER_EIT_TAGGED_IMAGE"
+  fi
+
+
+  if  [ "$DOCKER_COMMIT_IMAGE" = true ]; then
+    if docker images | grep -q "$DOCKER_EIT_IMAGE"; then
+      echo "[*] The base image exists"
+    else
+      docker pull "$DOCKER_EIT_IMAGE"
+    fi
+
+    if docker images | grep -q "$DOCKER_EIT_TAGGED_IMAGE"; then
+      echo "[*] A tagged image already exists"
+    else
+      docker tag "$DOCKER_EIT_IMAGE" "$DOCKER_EIT_TAGGED_IMAGE"
+    fi
+    export DOCKER_EIT_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
+  fi
+  #end Tag and create cache image if needed of eit container
+
   # Create repository
-  DOCKER_OPTS="-t --rm" DOCKER_IMAGE="${DOCKER_EIT_IMAGE}" DOCKER_PULL_IMAGE=1 PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+  DOCKER_OPTS="-t" DOCKER_IMAGE="${DOCKER_EIT_IMAGE}" DOCKER_PULL_IMAGE=1 PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
 
   rm -rf $TEMPDIR
   [ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
