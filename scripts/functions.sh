@@ -232,14 +232,14 @@ build_all() {
 
   # Caching also Eit images
 
-  if [ -n "$CLEAN_CACHE" ] && [ "$CLEAN_CACHE" -eq 1 ] &&
-      [ "$DOCKER_COMMIT_IMAGE" = true ]; then
-    if docker images | grep -q "$DOCKER_EIT_TAGGED_IMAGE"; then
-      docker rmi -f "$DOCKER_EIT_TAGGED_IMAGE"
-    fi
-    docker pull "$DOCKER_EIT_IMAGE"
-    docker tag "$DOCKER_EIT_IMAGE" "$DOCKER_EIT_TAGGED_IMAGE"
-  fi
+  # if [ -n "$CLEAN_CACHE" ] && [ "$CLEAN_CACHE" -eq 1 ] &&
+  #     [ "$DOCKER_COMMIT_IMAGE" = true ]; then
+  #   if docker images | grep -q "$DOCKER_EIT_TAGGED_IMAGE"; then
+  #     docker rmi -f "$DOCKER_EIT_TAGGED_IMAGE"
+  #   fi
+  #   docker pull "$DOCKER_EIT_IMAGE"
+  #   docker tag "$DOCKER_EIT_IMAGE" "$DOCKER_EIT_TAGGED_IMAGE"
+  # fi
 
 
   if  [ "$DOCKER_COMMIT_IMAGE" = true ]; then
