@@ -260,6 +260,9 @@ build_all() {
 
   # Create repository
   DOCKER_OPTS="-t" DOCKER_IMAGE="${DOCKER_EIT_IMAGE}" DOCKER_PULL_IMAGE=1 PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+  CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
+
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && { docker commit $CID $DOCKER_EIT_TAGGED_IMAGE; docker rm -f $CID; }
 
   rm -rf $TEMPDIR
   [ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
