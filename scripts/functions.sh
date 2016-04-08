@@ -260,7 +260,7 @@ build_all() {
   #end Tag and create cache image if needed of eit container
 
   # Create repository
-  DOCKER_OPTS="-t" DOCKER_IMAGE="${DOCKER_EIT_IMAGE}" DOCKER_PULL_IMAGE=1 PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+  DOCKER_OPTS="-t" DOCKER_PULL_IMAGE=1 PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
   CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
 
   [ "$DOCKER_COMMIT_IMAGE" = true ] && { docker commit $CID $DOCKER_EIT_TAGGED_IMAGE; docker rm -f $CID; }
@@ -272,10 +272,9 @@ build_all() {
   generate_repository_metadata
 
   # Cleanup - old cruft/Maintenance
-  unset DOCKER_IMAGE
   build_clean
   purge_old_packages
-
+  unset DOCKER_IMAGE
   # Deploy repository inside "repositories"
   deploy_all "${REPOSITORY_NAME}"
 }
