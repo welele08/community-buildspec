@@ -259,6 +259,8 @@ build_all() {
   fi
   #end Tag and create cache image if needed of eit container
 
+  [ -n "${TOREMOVE}" ] && package_remove ${TOREMOVE}
+
   # Create repository
   DOCKER_OPTS="-t" DOCKER_PULL_IMAGE=1 PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
   CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
@@ -339,8 +341,6 @@ automated_build() {
   env -i REPOSITORY_NAME=$REPO_NAME REPOSITORIES=$REPOSITORIES TEMPLOG=$TEMPLOG /bin/bash -c "
   . /vagrant/scripts/functions.sh
   load_env_from_yaml \"build.yaml\"
-  [ -n \"\${TOREMOVE}\" ] && package_remove \${TOREMOVE}
-
   { build_all \"\$BUILD_ARGS\"; } 1>&2 > \$TEMPLOG "
   NOW=$(date +"%Y-%m-%d")
   [ ! -d "${VAGRANT_DIR}/logs/$NOW" ] && mkdir -p ${VAGRANT_DIR}/logs/$NOW && chmod -R 755 ${VAGRANT_DIR}/logs/$NOW
