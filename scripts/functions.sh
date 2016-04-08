@@ -11,7 +11,7 @@ DOCKER_COMMIT_IMAGE=${DOCKER_COMMIT_IMAGE:-true}
 CHECK_BUILD_DIFFS=${CHECK_BUILD_DIFFS:-true}
 VAGRANT_DIR="${VAGRANT_DIR:-/vagrant}"
 
-export DOCKER_OPTS="${DOCKER_OPTS:--t --rm}"
+export DOCKER_OPTS="${DOCKER_OPTS:--t}" # Remember to set --rm if DOCKER_COMMIT_IMAGE: false
 export DISTFILES="${VAGRANT_DIR}/distfiles"
 export ENTROPY_DOWNLOADED_PACKAGES="${VAGRANT_DIR}/entropycache"
 export DOCKER_EIT_IMAGE="${DOCKER_EIT_IMAGE:-sabayon/eit-amd64}"
@@ -275,7 +275,11 @@ build_all() {
 
   # Cleanup - old cruft/Maintenance
   build_clean
+  CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && { docker commit $CID $DOCKER_EIT_TAGGED_IMAGE; docker rm -f $CID; }
   purge_old_packages
+  CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && { docker commit $CID $DOCKER_EIT_TAGGED_IMAGE; docker rm -f $CID; }
   unset DOCKER_IMAGE
   # Deploy repository inside "repositories"
   deploy_all "${REPOSITORY_NAME}"

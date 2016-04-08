@@ -9,6 +9,11 @@ update_vagrant_repo
 
 docker_clean
 
+local images=$(docker images | tr -s ' ' | cut -d ' ' -f 3)
+if [ -n "${images}" ]; then
+  docker rmi ${images}
+fi
+
 # Cleaning docker stuff with hands or eventually it will grow and eat up all the disk.
 # [ -n "${DOCKER_IMAGE}" ] && docker rmi -f ${DOCKER_IMAGE} || docker rmi -f sabayon/builder-amd64
 #
