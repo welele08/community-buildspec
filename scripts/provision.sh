@@ -37,18 +37,18 @@ sed -i 's:txt;:txt log;:g' /etc/nginx/mime.types
 systemctl daemon-reload
 
 systemctl enable docker
-systemctl start docker
+systemctl restart docker
 
 systemctl enable vixie-cron
-systemctl start vixie-cron
+systemctl restart vixie-cron
 
 systemctl enable rsyncd
-systemctl start rsyncd
+systemctl restart rsyncd
 
 systemctl enable nginx
-systemctl start nginx
+systemctl restart nginx
 
-systemctl start lvm2-monitor.service
+systemctl restart lvm2-monitor.service
 systemctl enable lvm2-monitor.service
 
 crontab /vagrant/confs/crontab
