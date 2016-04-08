@@ -32,6 +32,7 @@ ExecStart=/usr/bin/docker daemon --storage-driver=devicemapper --storage-opt dm.
 
 cp -rfv /vagrant/confs/rsyncd.conf /etc/rsyncd.conf
 cp -rfv /vagrant/confs/nginx.conf /etc/nginx/nginx.conf
+sed -i 's:txt;:txt log;:g' /etc/nginx/mime.types
 
 systemctl daemon-reload
 
