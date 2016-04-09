@@ -19,3 +19,5 @@ done
 chmod 755 ${VAGRANT_DIR}/logs/
 generate_metadata
 docker_clean
+rm -rfv /tmp/.*
+rm -rfv /tmp/*
