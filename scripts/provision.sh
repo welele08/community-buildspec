@@ -40,7 +40,7 @@ systemctl enable docker
 systemctl restart docker
 
 systemctl enable vixie-cron
-systemctl restart vixie-cron
+systemctl start vixie-cron
 
 systemctl enable rsyncd
 systemctl restart rsyncd
