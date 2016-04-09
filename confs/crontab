@@ -3,6 +3,6 @@ PATH=/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/bin
 MAILTO=root
 HOME=/
 
-1 0 * * * flock -x /var/tmp/.nightly.lock -c /vagrant/scripts/nightly.sh
-5 22 1 * * flock -x /var/tmp/.nightly.lock -c /vagrant/scripts/monthly.sh
-5 18 * * 6 flock -x /var/tmp/.nightly.lock -c /vagrant/scripts/weekly.sh
+1 18 * * * flock -x /var/tmp/.nightly.lock -c /vagrant/scripts/nightly.sh
+5 16 1 * * flock -x /var/tmp/.nightly.lock -c /vagrant/scripts/monthly.sh
+5 12 * * 6 flock -x /var/tmp/.nightly.lock -c /vagrant/scripts/weekly.sh
