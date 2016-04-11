@@ -310,8 +310,14 @@ load_env_from_yaml() {
   cat $YAML_FILE | shyaml get-values build.overlays &>/dev/null && BUILD_ARGS="${BUILD_ARGS} --layman $(cat $YAML_FILE | shyaml get-values build.overlays | xargs echo)" #--layman options
   cat $YAML_FILE | shyaml get-values build.equo.package.install &>/dev/null && BUILD_ARGS="${BUILD_ARGS} --install $(cat $YAML_FILE | shyaml get-values build.equo.package.install | xargs echo)"  #mixed --install BUILD_ARGS
   cat $YAML_FILE | shyaml get-values build.equo.package.remove &>/dev/null && BUILD_ARGS="${BUILD_ARGS} --remove $(cat $YAML_FILE | shyaml get-values build.equo.package.remove | xargs echo)"  #mixed --remove BUILD_ARGS
+
+  cat $YAML_FILE | shyaml get-values build.equo.package.mask &>/dev/null && EQUO_MASKS ="$(cat $YAML_FILE | shyaml get-values build.equo.package.mask | xargs echo)"
+  cat $YAML_FILE | shyaml get-values build.equo.package.unmask &>/dev/null && EQUO_UNMASKS ="$(cat $YAML_FILE | shyaml get-values build.equo.package.unmask | xargs echo)"
+
   export BUILD_ARGS
   export BUILD_INJECTED_ARGS
+  export EQUO_MASKS
+  export EQUO_UNMASKS
 
   cat $YAML_FILE | shyaml get-value build.docker.image  &>/dev/null && export DOCKER_IMAGE=$(cat $YAML_FILE | shyaml get-value build.docker.image) # DOCKER_IMAGE
   cat $YAML_FILE | shyaml get-value build.docker.entropy_image  &>/dev/null && export DOCKER_EIT_IMAGE=$(cat $YAML_FILE | shyaml get-value build.docker.entropy_image) # DOCKER_EIT_IMAGE
