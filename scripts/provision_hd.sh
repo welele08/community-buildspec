@@ -12,7 +12,7 @@ dd if=/dev/zero of=/dev/sdb bs=512 count=1 conv=notrunc
 sudo pvcreate /dev/sdb
 vgcreate vg-docker /dev/sdb
 lvcreate -n datapool -L 190G vg-docker
-lvcreate -n metapool -L 10 vg-docker
+lvcreate -n metapool -L 50 vg-docker
 
 lvconvert -y --zero n --thinpool vg-docker/datapool --poolmetadata vg-docker/metapool
 
