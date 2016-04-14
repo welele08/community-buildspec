@@ -152,7 +152,6 @@ function get_image(){
   else
     docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
   fi
-  export DOCKER_IMAGE=$DOCKER_TAGGED_IMAGE
 }
 
 function expire_image(){
@@ -200,18 +199,21 @@ build_all() {
   [ "$CHECK_BUILD_DIFFS" = true ] && packages_hash $VAGRANT_DIR $REPOSITORY_NAME $OLD_BINHOST_MD5
 
   # Remove packages. maintainance first.
+  # Sets the docker image that we will use from now on
   [ "$DOCKER_COMMIT_IMAGE" = true ] && get_image $DOCKER_EIT_IMAGE $DOCKER_EIT_TAGGED_IMAGE
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && get_image $DOCKER_BUILDER_IMAGE $DOCKER_BUILDER_TAGGED_IMAGE
+  export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
   [ -n "${TOREMOVE}" ] && package_remove ${TOREMOVE} && [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_EIT_TAGGED_IMAGE
 
 
   # Free the cache of builder if requested.
   [ -n "$CLEAN_CACHE" ] && [ "$CLEAN_CACHE" -eq 1 ] && [ "$DOCKER_COMMIT_IMAGE" = true ] && expire_image $DOCKER_BUILDER_IMAGE $REPOSITORY_NAME
 
-  # Sets the docker image that we will use from now on
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && get_image $DOCKER_BUILDER_IMAGE $DOCKER_BUILDER_TAGGED_IMAGE
+  export DOCKER_IMAGE=$DOCKER_BUILDER_TAGGED_IMAGE
+
 
   # Build packages
-  OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
+  DOCKER_IMAGE=$DOCKER_BUILDER_TAGGED_IMAGE OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
   local BUILD_STATUS=$?
   [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_BUILDER_TAGGED_IMAGE
 
@@ -246,9 +248,9 @@ build_all() {
   fi
 
   # Preparing Eit image.
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && get_image $DOCKER_EIT_IMAGE $DOCKER_EIT_TAGGED_IMAGE
+  export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
   # Create repository
-  DOCKER_OPTS="-t" PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+  DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE DOCKER_OPTS="-t" PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
   [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_EIT_TAGGED_IMAGE
 
   rm -rf $TEMPDIR
@@ -269,15 +271,13 @@ build_all() {
 
 build_clean() {
   [ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
-  OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-cleanup
+  DOCKER_IMAGE=$DOCKER_IMAGE OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-cleanup
 }
 
 package_remove() {
   [ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
   OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-remove "$@"
 }
-
-
 
 load_env_from_yaml() {
   local YAML_FILE=$1
