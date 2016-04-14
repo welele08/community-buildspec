@@ -137,6 +137,44 @@ packages_hash() {
   cat ${HASH_OUTPUT}
 }
 
+function get_image(){
+  local DOCKER_IMAGE="${1}"
+  local DOCKER_TAGGED_IMAGE="${2}"
+
+  if docker images | grep -q "$DOCKER_IMAGE"; then
+    echo "[*] The base image exists"
+  else
+    docker pull "$DOCKER_IMAGE"
+  fi
+
+  if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
+    echo "[*] A tagged image already exists"
+  else
+    docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
+  fi
+  export DOCKER_IMAGE=$DOCKER_TAGGED_IMAGE
+}
+
+function expire_image(){
+  local DOCKER_IMAGE="${1}"
+  local DOCKER_TAGGED_IMAGE="${2}"
+
+  if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
+    docker rmi -f "$DOCKER_TAGGED_IMAGE"
+  fi
+  docker pull "$DOCKER_IMAGE"
+  docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
+}
+
+docker_commit_latest_container(){
+  local IMAGE=$1
+  local CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
+  [ -z "$IMAGE" ] && die "No docker image provided (1 arg)"
+  [ -z "$CID" ] && die "Couldn't detect latest running container :("
+
+  docker commit $CID $IMAGE
+  docker rm -f $CID
+}
 
 build_all() {
   local BUILD_ARGS="$@"
@@ -145,58 +183,35 @@ build_all() {
 
   [ -z "$REPOSITORY_NAME" ] && echo "warning: repository name (REPOSITORY_NAME) not defined, using your current working directory name"
   export REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename $(pwd))}"
-  local DOCKER_IMAGE="${DOCKER_IMAGE:-sabayon/builder-amd64}"
-  local DOCKER_TAGGED_IMAGE="${DOCKER_IMAGE}-$REPOSITORY_NAME"
+  local DOCKER_BUILDER_IMAGE="${DOCKER_IMAGE:-sabayon/builder-amd64}"
+  local DOCKER_BUILDER_TAGGED_IMAGE="${DOCKER_BUILDER_IMAGE}-$REPOSITORY_NAME"
 
   local DOCKER_EIT_IMAGE="${DOCKER_EIT_IMAGE:-sabayon/eit-amd64}"
   local DOCKER_EIT_TAGGED_IMAGE="${DOCKER_EIT_IMAGE}-$REPOSITORY_NAME"
 
-
-  # Tag and create cache image if needed
-  if [ -n "$CLEAN_CACHE" ] && [ "$CLEAN_CACHE" -eq 1 ] &&
-      [ "$DOCKER_COMMIT_IMAGE" = true ]; then
-    if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
-      docker rmi -f "$DOCKER_TAGGED_IMAGE"
-    fi
-    docker pull "$DOCKER_IMAGE"
-    docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
-  fi
-
-
-  if  [ "$DOCKER_COMMIT_IMAGE" = true ]; then
-    if docker images | grep -q "$DOCKER_IMAGE"; then
-      echo "[*] The base image exists"
-    else
-      docker pull "$DOCKER_IMAGE"
-    fi
-
-    if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
-      echo "[*] A tagged image already exists"
-    else
-      docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
-    fi
-    DOCKER_IMAGE=$DOCKER_TAGGED_IMAGE
-  fi
-  #end Tag and create cache image if needed
-
   local OLD_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
   local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
 
-  if [ "$CHECK_BUILD_DIFFS" = true ]; then
-    #we need to get rid of Packages during md5sum, it contains TIMESTAMP that gets updated on each build (and thus changes, also if the compiled files remains the same)
-    #here we are trying to see if there are diffs between the bins, not buy the metas.
-    # let's do the hash of the tbz2 without xpak data
+  #we need to get rid of Packages during md5sum, it contains TIMESTAMP that gets updated on each build (and thus changes, also if the compiled files remains the same)
+  #here we are trying to see if there are diffs between the bins, not buy the metas.
+  # let's do the hash of the tbz2 without xpak data
+  [ "$CHECK_BUILD_DIFFS" = true ] && packages_hash $VAGRANT_DIR $REPOSITORY_NAME $OLD_BINHOST_MD5
 
-    packages_hash $VAGRANT_DIR $REPOSITORY_NAME $OLD_BINHOST_MD5
-  fi
+  # Remove packages. maintainance first.
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && get_image $DOCKER_EIT_IMAGE $DOCKER_EIT_TAGGED_IMAGE
+  [ -n "${TOREMOVE}" ] && package_remove ${TOREMOVE} && [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_EIT_TAGGED_IMAGE
 
-  #Build repository
-  DOCKER_IMAGE="$DOCKER_IMAGE" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
+
+  # Free the cache of builder if requested.
+  [ -n "$CLEAN_CACHE" ] && [ "$CLEAN_CACHE" -eq 1 ] && [ "$DOCKER_COMMIT_IMAGE" = true ] && expire_image $DOCKER_BUILDER_IMAGE $REPOSITORY_NAME
+
+  # Sets the docker image that we will use from now on
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && get_image $DOCKER_BUILDER_IMAGE $DOCKER_BUILDER_TAGGED_IMAGE
+
+  # Build packages
+  OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
   local BUILD_STATUS=$?
-  local CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
-
-
- [ "$DOCKER_COMMIT_IMAGE" = true ] && { docker commit $CID $DOCKER_IMAGE; docker rm -f $CID; }
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_BUILDER_TAGGED_IMAGE
 
   if [ $BUILD_STATUS -eq 0 ]
   then
@@ -228,61 +243,26 @@ build_all() {
     cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $TEMPDIR
   fi
 
-  unset DOCKER_IMAGE
-
-  # Caching also Eit images
-
-  # if [ -n "$CLEAN_CACHE" ] && [ "$CLEAN_CACHE" -eq 1 ] &&
-  #     [ "$DOCKER_COMMIT_IMAGE" = true ]; then
-  #   if docker images | grep -q "$DOCKER_EIT_TAGGED_IMAGE"; then
-  #     docker rmi -f "$DOCKER_EIT_TAGGED_IMAGE"
-  #   fi
-  #   docker pull "$DOCKER_EIT_IMAGE"
-  #   docker tag "$DOCKER_EIT_IMAGE" "$DOCKER_EIT_TAGGED_IMAGE"
-  # fi
-
-
-  if  [ "$DOCKER_COMMIT_IMAGE" = true ]; then
-    if docker images | grep -q "$DOCKER_EIT_IMAGE"; then
-      echo "[*] The base image exists"
-    else
-      docker pull "$DOCKER_EIT_IMAGE"
-    fi
-
-    if docker images | grep -q "$DOCKER_EIT_TAGGED_IMAGE"; then
-      echo "[*] A tagged image already exists"
-    else
-      docker tag "$DOCKER_EIT_IMAGE" "$DOCKER_EIT_TAGGED_IMAGE"
-    fi
-    export DOCKER_EIT_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
-    export DOCKER_IMAGE="${DOCKER_EIT_IMAGE}"
-  fi
-  #end Tag and create cache image if needed of eit container
-
-  [ -n "${TOREMOVE}" ] && package_remove ${TOREMOVE}
-
+  # Preparing Eit image.
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && get_image $DOCKER_EIT_IMAGE $DOCKER_EIT_TAGGED_IMAGE
   # Create repository
-  DOCKER_OPTS="-t" DOCKER_PULL_IMAGE=1 PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
-  CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
-
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && { docker commit $CID $DOCKER_EIT_TAGGED_IMAGE; docker rm -f $CID; }
+  DOCKER_OPTS="-t" PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_EIT_TAGGED_IMAGE
 
   rm -rf $TEMPDIR
   [ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
 
   # Generating metadata
   generate_repository_metadata
-
   # Cleanup - old cruft/Maintenance
   build_clean
-  CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && { docker commit $CID $DOCKER_EIT_TAGGED_IMAGE; docker rm -f $CID; }
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_EIT_TAGGED_IMAGE
   purge_old_packages
-  CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && { docker commit $CID $DOCKER_EIT_TAGGED_IMAGE; docker rm -f $CID; }
-  unset DOCKER_IMAGE
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_EIT_TAGGED_IMAGE
+
   # Deploy repository inside "repositories"
   deploy_all "${REPOSITORY_NAME}"
+  unset DOCKER_IMAGE
 }
 
 build_clean() {
@@ -294,6 +274,8 @@ package_remove() {
   [ -z "$REPOSITORY_NAME" ] && die "No Repository name passed (1 arg)"
   OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo-remove "$@"
 }
+
+
 
 load_env_from_yaml() {
   local YAML_FILE=$1
