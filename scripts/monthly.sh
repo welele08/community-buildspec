@@ -17,9 +17,9 @@ fi
 # Cleaning docker stuff with hands or eventually it will grow and eat up all the disk.
 # [ -n "${DOCKER_IMAGE}" ] && docker rmi -f ${DOCKER_IMAGE} || docker rmi -f sabayon/builder-amd64
 #
-# systemctl stop docker
-# rm -rfv /var/lib/docker
-# systemctl start docker
+systemctl stop docker
+rm -rf /var/lib/docker/*
+systemctl start docker
 #
 # [ -n "${DOCKER_IMAGE}" ] && docker pull ${DOCKER_IMAGE} || docker pull sabayon/builder-amd64
 
@@ -27,7 +27,8 @@ fi
 crontab ${VAGRANT_DIR}/confs/crontab
 
 # yeah, dirty cleanup!
-rm -rf ${DISTFILES}/*
+#rm -rf ${DISTFILES}/*
 rm -rf ${ENTROPY_DOWNLOADED_PACKAGES}/*
+
 rm -rfv /tmp/.*
 rm -rfv /tmp/*
