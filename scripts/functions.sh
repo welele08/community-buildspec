@@ -200,8 +200,8 @@ build_all() {
 
   # Remove packages. maintainance first.
   # Sets the docker image that we will use from now on
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && get_image $DOCKER_EIT_IMAGE $DOCKER_EIT_TAGGED_IMAGE
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && get_image $DOCKER_BUILDER_IMAGE $DOCKER_BUILDER_TAGGED_IMAGE
+  get_image $DOCKER_EIT_IMAGE $DOCKER_EIT_TAGGED_IMAGE
+  get_image $DOCKER_BUILDER_IMAGE $DOCKER_BUILDER_TAGGED_IMAGE
 
   export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
   [ -n "${TOREMOVE}" ] && package_remove ${TOREMOVE} && [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_EIT_TAGGED_IMAGE
