@@ -208,7 +208,7 @@ build_all() {
 
 
   # Free the cache of builder if requested.
-  [ -n "$CLEAN_CACHE" ] && [ "$CLEAN_CACHE" -eq 1 ] && [ "$DOCKER_COMMIT_IMAGE" = true ] && expire_image $DOCKER_BUILDER_IMAGE $REPOSITORY_NAME
+  [ -n "$CLEAN_CACHE" ] && [ "$CLEAN_CACHE" -eq 1 ] && [ "$DOCKER_COMMIT_IMAGE" = true ] && expire_image $DOCKER_BUILDER_IMAGE $DOCKER_BUILDER_TAGGED_IMAGE
 
   export DOCKER_IMAGE=$DOCKER_BUILDER_TAGGED_IMAGE
 
