@@ -13,7 +13,7 @@ Vagrant.configure(2) do |config|
 
 config.persistent_storage.enabled = true
 config.persistent_storage.location = file_to_disk
-config.persistent_storage.size = 250000
+config.persistent_storage.size = 500000
 config.persistent_storage.format = false
 config.persistent_storage.use_lvm = false
 
