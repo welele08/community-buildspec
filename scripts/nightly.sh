@@ -6,16 +6,19 @@
 export DEPLOY_SERVER
 export DEPLOY_PORT
 export DOCKER_PULL_IMAGE=0
+export PARALLEL_JOBS="${PARALLEL_JOBS:-1}"
 
 mkdir -p ${VAGRANT_DIR}/logs/$NOW
 chmod -R 755 ${VAGRANT_DIR}/logs/$NOW
 update_vagrant_repo
 system_upgrade
 
-for i in "${REPOSITORIES[@]}"
-do
-  automated_build $i
-done
+#for i in "${REPOSITORIES[@]}"
+#do
+#  automated_build $i
+#done
+env_parallel -P "${PARALLEL_JOBS}" automated_build ::: "${REPOSITORIES[@]}"
+
 chmod 755 ${VAGRANT_DIR}/logs/
 generate_metadata
 docker_clean

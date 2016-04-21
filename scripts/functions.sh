@@ -40,6 +40,15 @@ fi
 
 die() { echo "$@" 1>&2 ; exit 1; }
 
+env_parallel() {
+  export PARALLEL_ENV="$(echo "shopt -s expand_aliases 2>/dev/null"; alias;typeset -p |
+    grep -vFf <(readonly) |
+    grep -v 'declare .. (GROUPS|FUNCNAME|DIRSTACK|_|PIPESTATUS|USERNAME|BASH_[A-Z_]+) ';
+    typeset -f)";
+  `which parallel` "$@";
+  unset PARALLEL_ENV;
+}
+
 update_repositories() {
   REPOSITORIES=( $(find ${VAGRANT_DIR}/repositories -maxdepth 1 -type d -printf '%P\n' | grep -v '^\.' | sort) )
   export REPOSITORIES
