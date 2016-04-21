@@ -193,7 +193,13 @@ build_all() {
   get_image $DOCKER_BUILDER_IMAGE $DOCKER_BUILDER_TAGGED_IMAGE
 
   export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
-  [ -n "${TOREMOVE}" ] && export DOCKER_OPTS="${DOCKER_USER_OPTS} -name ${REPOSITORY_NAME}-remove" && package_remove ${TOREMOVE} && [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-remove" $DOCKER_EIT_TAGGED_IMAGE
+
+  [ -n "${TOREMOVE}" ] && \
+  export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-remove" && \
+  package_remove ${TOREMOVE} && \
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && \
+  docker commit "${REPOSITORY_NAME}-remove" $DOCKER_EIT_TAGGED_IMAGE && \
+  docker rm -f "${REPOSITORY_NAME}-remove"
 
 
   # Free the cache of builder if requested.
@@ -201,11 +207,11 @@ build_all() {
 
   export DOCKER_IMAGE=$DOCKER_BUILDER_TAGGED_IMAGE
 
-  export DOCKER_OPTS="${DOCKER_USER_OPTS} -name ${REPOSITORY_NAME}-build"
+  export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-build"
   # Build packages
   OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
   local BUILD_STATUS=$?
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-build" $DOCKER_BUILDER_TAGGED_IMAGE
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-build" $DOCKER_BUILDER_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-build"
 
   if [ $BUILD_STATUS -eq 0 ]
   then
@@ -240,9 +246,9 @@ build_all() {
   # Preparing Eit image.
   export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
   # Create repository
-  export DOCKER_OPTS="${DOCKER_USER_OPTS} -name ${REPOSITORY_NAME}-eit"
+  export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-eit"
   PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-eit" $DOCKER_EIT_TAGGED_IMAGE
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-eit" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-eit"
 
   rm -rf $TEMPDIR
   [ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
@@ -250,12 +256,11 @@ build_all() {
   # Generating metadata
   generate_repository_metadata
   # Cleanup - old cruft/Maintenance
-  export DOCKER_OPTS="${DOCKER_USER_OPTS} -name ${REPOSITORY_NAME}-clean"
+  export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-clean"
   build_clean
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean" $DOCKER_EIT_TAGGED_IMAGE
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean"
   purge_old_packages
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean" $DOCKER_EIT_TAGGED_IMAGE
-
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean"
   # Deploy repository inside "repositories"
   deploy_all "${REPOSITORY_NAME}"
   unset DOCKER_IMAGE
