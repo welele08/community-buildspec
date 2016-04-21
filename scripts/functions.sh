@@ -71,7 +71,7 @@ irc_msg() {
   [ -z "$IRC_MESSAGE" ] && return 1
   [ -z "$IRC_CHANNEL" ] && return 1
 
-  echo -e "USER ${IRC_IDENT}\nNICK ${IRC_NICK}\nJOIN ${IRC_CHANNEL}\nPRIVMSG ${IRC_CHANNEL} :${IRC_MESSAGE}\nQUIT\n" \
+  echo -e "USER ${IRC_IDENT}\nNICK ${IRC_NICK}${RANDOM}\nJOIN ${IRC_CHANNEL}\nPRIVMSG ${IRC_CHANNEL} :${IRC_MESSAGE}\nQUIT\n" \
   | nc irc.freenode.net 6667 > /dev/null || true
 
 }
