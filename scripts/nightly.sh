@@ -13,10 +13,7 @@ chmod -R 755 ${VAGRANT_DIR}/logs/$NOW
 update_vagrant_repo
 system_upgrade
 
-#for i in "${REPOSITORIES[@]}"
-#do
-#  automated_build $i
-#done
+chmod -R 777 ${VAGRANT_DIR}/distfiles/
 env_parallel -P "${PARALLEL_JOBS}" automated_build ::: "${REPOSITORIES[@]}"
 
 chmod 755 ${VAGRANT_DIR}/logs/
