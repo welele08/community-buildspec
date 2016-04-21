@@ -165,18 +165,6 @@ function expire_image(){
   docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
 }
 
-docker_commit_latest_container(){
-  local IMAGE=$1
-  sleep 1
-  local CID=$(docker ps -aq | xargs echo | cut -d ' ' -f 1)
-
-  [ -z "$IMAGE" ] && die "No docker image provided (1 arg)"
-  [ -z "$CID" ] && die "Couldn't detect latest running container :("
-
-  docker commit $CID $IMAGE
-  docker rm -f $CID
-}
-
 build_all() {
   local BUILD_ARGS="$@"
 
@@ -189,6 +177,7 @@ build_all() {
 
   local DOCKER_EIT_IMAGE="${DOCKER_EIT_IMAGE:-sabayon/eit-amd64}"
   local DOCKER_EIT_TAGGED_IMAGE="${DOCKER_EIT_IMAGE}-$REPOSITORY_NAME"
+  local DOCKER_USER_OPTS="${DOCKER_OPTS}"
 
   local OLD_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
   local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
@@ -204,7 +193,7 @@ build_all() {
   get_image $DOCKER_BUILDER_IMAGE $DOCKER_BUILDER_TAGGED_IMAGE
 
   export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
-  [ -n "${TOREMOVE}" ] && package_remove ${TOREMOVE} && [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_EIT_TAGGED_IMAGE
+  [ -n "${TOREMOVE}" ] && export DOCKER_OPTS="${DOCKER_USER_OPTS} -name ${REPOSITORY_NAME}-remove" && package_remove ${TOREMOVE} && [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-remove" $DOCKER_EIT_TAGGED_IMAGE
 
 
   # Free the cache of builder if requested.
@@ -212,11 +201,11 @@ build_all() {
 
   export DOCKER_IMAGE=$DOCKER_BUILDER_TAGGED_IMAGE
 
-
+  export DOCKER_OPTS="${DOCKER_USER_OPTS} -name ${REPOSITORY_NAME}-build"
   # Build packages
   OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
   local BUILD_STATUS=$?
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_BUILDER_TAGGED_IMAGE
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-build" $DOCKER_BUILDER_TAGGED_IMAGE
 
   if [ $BUILD_STATUS -eq 0 ]
   then
@@ -251,8 +240,9 @@ build_all() {
   # Preparing Eit image.
   export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
   # Create repository
-  DOCKER_OPTS="-t" PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_EIT_TAGGED_IMAGE
+  export DOCKER_OPTS="${DOCKER_USER_OPTS} -name ${REPOSITORY_NAME}-eit"
+  PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-eit" $DOCKER_EIT_TAGGED_IMAGE
 
   rm -rf $TEMPDIR
   [ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
@@ -260,14 +250,16 @@ build_all() {
   # Generating metadata
   generate_repository_metadata
   # Cleanup - old cruft/Maintenance
+  export DOCKER_OPTS="${DOCKER_USER_OPTS} -name ${REPOSITORY_NAME}-clean"
   build_clean
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_EIT_TAGGED_IMAGE
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean" $DOCKER_EIT_TAGGED_IMAGE
   purge_old_packages
-  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker_commit_latest_container $DOCKER_EIT_TAGGED_IMAGE
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean" $DOCKER_EIT_TAGGED_IMAGE
 
   # Deploy repository inside "repositories"
   deploy_all "${REPOSITORY_NAME}"
   unset DOCKER_IMAGE
+  unset DOCKER_OPTS
 }
 
 build_clean() {
