@@ -19,8 +19,6 @@ export PORTAGE_CACHE="${PORTAGE_CACHE:-${VAGRANT_DIR}/portagecache}"
 export EMERGE_DEFAULTS_ARGS="${EMERGE_DEFAULTS_ARGS:---accept-properties=-interactive -t --verbose -n --nospinner --oneshot --complete-graph --buildpkg}"
 export FEATURES="parallel-fetch protect-owned -userpriv distcc"
 export WEBRSYNC="${WEBRSYNC:-1}"
-export PRIVATEKEY="${PRIVATEKEY:-${VAGRANT_DIR}/confs/private.key}"
-export PUBKEY="${PUBKEY:-${VAGRANT_DIR}/confs/key.pub}"
 export COMMUNITY_REPOSITORY_SPECS="${COMMUNITY_REPOSITORY_SPECS:-https://github.com/Sabayon/community-repositories.git}"
 export ARCHES="amd64"
 export KEEP_PREVIOUS_VERSIONS=1 #you can override this in build.sh
@@ -193,23 +191,32 @@ touch .gnupg/{pub,sec}ring.gpg
 cat >.gnupg/foo <<EOF
     %echo Generating a basic OpenPGP key for ${REPOSITORY_NAME}
     Key-Type: RSA
-    Key-Length: 2048
-    Subkey-Type: RSA
-    Subkey-Length: 2048
+    Key-Length: 1024
     Name-Real: ${REPOSITORY_NAME}
     Name-Comment: ${REPOSITORY_NAME}
-    Name-Email: ${REPOSITORY_NAME}
+    Name-Email: ${REPOSITORY_NAME}@sabayon.org
+    Expire-Date: 0
+    # Do a commit here, so that we can later print "done" :-)
+    %commit
+
+    Key-Type: DSA
+    Key-Length: 1024
+    Subkey-Type: ELG-E
+    Subkey-Length: 1024
+    Name-Real: ${REPOSITORY_NAME}
+    Name-Comment: ${REPOSITORY_NAME}
+    Name-Email: ${REPOSITORY_NAME}@sabayon.org
     Expire-Date: 0
     %pubring public.pub
     %secring private.sec
-    # Do a commit here, so that we can later print "done" :-)
-    %commit
+   %commit
+
     %echo done
 EOF
 gpg2 --verbose --batch --gen-key .gnupg/foo
-
-[ -e "public.pub" ] && mv -f public.pub ${PUBKEY} || die "failed gpg keys generation (public key missing)"
-[ -e "private.sec" ] && mv -f private.sec ${PRIVKEY} || die "failed gpg keys generation (private key missing)"
+ls -liah /tmp
+gpg --armor --export-secret-keys > ${PRIVKEY}
+gpg --armor --export > ${PUBKEY}
 popd
 
 rm -rf ${TEMPDIR}
