@@ -19,8 +19,6 @@ export PORTAGE_CACHE="${PORTAGE_CACHE:-${VAGRANT_DIR}/portagecache}"
 export EMERGE_DEFAULTS_ARGS="${EMERGE_DEFAULTS_ARGS:---accept-properties=-interactive -t --verbose -n --nospinner --oneshot --complete-graph --buildpkg}"
 export FEATURES="parallel-fetch protect-owned -userpriv distcc"
 export WEBRSYNC="${WEBRSYNC:-1}"
-export PRIVATEKEY="${PRIVATEKEY:-${VAGRANT_DIR}/confs/private.key}"
-export PUBKEY="${PUBKEY:-${VAGRANT_DIR}/confs/key.pub}"
 export COMMUNITY_REPOSITORY_SPECS="${COMMUNITY_REPOSITORY_SPECS:-https://github.com/Sabayon/community-repositories.git}"
 export ARCHES="amd64"
 export KEEP_PREVIOUS_VERSIONS=1 #you can override this in build.sh
