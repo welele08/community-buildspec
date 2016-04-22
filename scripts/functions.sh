@@ -227,6 +227,8 @@ local BUILD_ARGS="$@"
 
 local TEMPDIR=$(mktemp -d)
 
+local JOB_ID=$RANDOM
+
 [ -z "$REPOSITORY_NAME" ] && echo "warning: repository name (REPOSITORY_NAME) not defined, using your current working directory name"
 export REPOSITORY_NAME="${REPOSITORY_NAME:-$(basename $(pwd))}"
 local DOCKER_BUILDER_IMAGE="${DOCKER_IMAGE:-sabayon/builder-amd64}"
@@ -259,11 +261,11 @@ get_image $DOCKER_BUILDER_IMAGE $DOCKER_BUILDER_TAGGED_IMAGE
 export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
 
 [ -n "${TOREMOVE}" ] && \
-export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-remove" && \
+export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-remove-${JOB_ID}" && \
 package_remove ${TOREMOVE} && \
 [ "$DOCKER_COMMIT_IMAGE" = true ] && \
-docker commit "${REPOSITORY_NAME}-remove" $DOCKER_EIT_TAGGED_IMAGE && \
-docker rm -f "${REPOSITORY_NAME}-remove"
+docker commit "${REPOSITORY_NAME}-remove-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && \
+docker rm -f "${REPOSITORY_NAME}-remove-${JOB_ID}"
 
 
 # Free the cache of builder if requested.
@@ -271,11 +273,11 @@ docker rm -f "${REPOSITORY_NAME}-remove"
 
 export DOCKER_IMAGE=$DOCKER_BUILDER_TAGGED_IMAGE
 
-export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-build"
+export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-build-${JOB_ID}"
 # Build packages
 OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpackages $BUILD_ARGS
 local BUILD_STATUS=$?
-[ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-build" $DOCKER_BUILDER_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-build"
+[ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-build-${JOB_ID}" $DOCKER_BUILDER_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-build-${JOB_ID}"
 
 if [ $BUILD_STATUS -eq 0 ]
 then
@@ -310,9 +312,9 @@ fi
 # Preparing Eit image.
 export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
 # Create repository
-export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-eit"
+export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-eit-${JOB_ID}"
 PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
-[ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-eit" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-eit"
+[ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-eit-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-eit-${JOB_ID}"
 
 rm -rf $TEMPDIR
 [ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
@@ -320,11 +322,11 @@ rm -rf $TEMPDIR
 # Generating metadata
 generate_repository_metadata
 # Cleanup - old cruft/Maintenance
-export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-clean"
+export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-clean-${JOB_ID}"
 build_clean
-[ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean"
+[ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean-${JOB_ID}"
 purge_old_packages
-[ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean"
+[ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean-${JOB_ID}"
 # Deploy repository inside "repositories"
 deploy_all "${REPOSITORY_NAME}"
 unset DOCKER_IMAGE
