@@ -213,7 +213,7 @@ cat >.gnupg/foo <<EOF
 
     %echo done
 EOF
-gpg2 --verbose --batch --gen-key .gnupg/foo
+gpg --verbose --batch --gen-key .gnupg/foo
 ls -liah /tmp
 gpg --armor --export-secret-keys > ${PRIVKEY}
 gpg --armor --export > ${PUBKEY}
