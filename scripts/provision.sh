@@ -11,7 +11,7 @@ echo -5 | equo conf update
 equo i docker sabayon-devkit vixie-cron git wget curl ansifilter md5deep \
 dev-perl/JSON dev-perl/libwww-perl dev-python/pip \
 sys-fs/btrfs-progs sys-apps/util-linux net-analyzer/netcat6 \
-www-servers/nginx sys-process/parallel
+www-servers/nginx sys-process/parallel rng-tools
 
 pip install shyaml
 
@@ -32,6 +32,8 @@ ExecStart=/usr/bin/docker daemon --storage-driver=devicemapper --storage-opt dm.
 
 cp -rfv /vagrant/confs/rsyncd.conf /etc/rsyncd.conf
 cp -rfv /vagrant/confs/nginx.conf /etc/nginx/nginx.conf
+cp -rfv /vagrant/confs/rngd.service /usr/lib64/systemd/system/rngd.service
+
 sed -i 's:txt;:txt log;:g' /etc/nginx/mime.types
 
 systemctl daemon-reload
@@ -47,6 +49,9 @@ systemctl restart rsyncd
 
 systemctl enable nginx
 systemctl restart nginx
+
+systemctl enable rngd
+systemctl restart rngd
 
 systemctl restart lvm2-monitor.service
 systemctl enable lvm2-monitor.service
