@@ -191,6 +191,13 @@ build_all() {
   local OLD_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
   local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
 
+
+# Generate keys if not present
+  export PRIVATEKEY="${PRIVATEKEY:-${VAGRANT_DIR}/confs/${REPOSITORY_NAME}.key}"
+  export PUBKEY="${PUBKEY:-${VAGRANT_DIR}/confs/${REPOSITORY_NAME}.pub}"
+( [ ! -e ${PRIVATEKEY} ] || [ ! -e ${PUBKEY} ] ) && gen_gpg_keys "${PRIVATEKEY}" "${PUBKEY}"
+
+
   #we need to get rid of Packages during md5sum, it contains TIMESTAMP that gets updated on each build (and thus changes, also if the compiled files remains the same)
   #here we are trying to see if there are diffs between the bins, not buy the metas.
   # let's do the hash of the tbz2 without xpak data
