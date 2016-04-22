@@ -208,8 +208,8 @@ cat >.gnupg/foo <<EOF
 EOF
 gpg2 --verbose --batch --gen-key .gnupg/foo
 
-mv -f public.pub ${PUBKEY}
-mv -f private.sec ${PRIVKEY}
+[ -e "public.pub" ] && mv -f public.pub ${PUBKEY} || die "failed gpg keys generation (public key missing)"
+[ -e "private.sec" ] && mv -f private.sec ${PRIVKEY} || die "failed gpg keys generation (private key missing)"
 popd
 
 rm -rf ${TEMPDIR}
