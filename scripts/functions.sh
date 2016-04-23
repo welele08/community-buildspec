@@ -191,30 +191,18 @@ touch .gnupg/{pub,sec}ring.gpg
 cat >.gnupg/foo <<EOF
     %echo Generating a basic OpenPGP key for ${REPOSITORY_NAME}
     Key-Type: RSA
-    Key-Length: 1024
-    Name-Real: ${REPOSITORY_NAME}
-    Name-Comment: ${REPOSITORY_NAME}
-    Name-Email: ${REPOSITORY_NAME}@sabayon.org
-    Expire-Date: 0
-    # Do a commit here, so that we can later print "done" :-)
-    %commit
-
-    Key-Type: DSA
-    Key-Length: 1024
-    Subkey-Type: ELG-E
-    Subkey-Length: 1024
+    Key-Length: 2048
     Name-Real: ${REPOSITORY_NAME}
     Name-Comment: ${REPOSITORY_NAME}
     Name-Email: ${REPOSITORY_NAME}@sabayon.org
     Expire-Date: 0
     %pubring public.pub
     %secring private.sec
-   %commit
-
+    # Do a commit here, so that we can later print "done" :-)
+    %commit
     %echo done
 EOF
 gpg --verbose --batch --gen-key .gnupg/foo
-ls -liah /tmp
 gpg --armor --export-secret-keys > ${PRIVKEY}
 gpg --armor --export > ${PUBKEY}
 popd
