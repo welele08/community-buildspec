@@ -179,16 +179,7 @@ local PUBKEY="${3}"
 
 local TEMPDIR=$(mktemp -d)
 pushd ${TEMPDIR}
-rm -rf .gnupg
-mkdir -m 0700 .gnupg
-touch .gnupg/gpg.conf
-chmod 600 .gnupg/gpg.conf
-tail -n +4 /usr/share/gnupg/gpg-conf.skel > .gnupg/gpg.conf
-
-touch .gnupg/{pub,sec}ring.gpg
-
-
-cat >.gnupg/foo <<EOF
+cat >gpgbatch <<EOF
     %echo Generating a basic OpenPGP key for ${REPOSITORY_NAME}
     Key-Type: RSA
     Key-Length: 2048
@@ -202,9 +193,9 @@ cat >.gnupg/foo <<EOF
     %commit
     %echo done
 EOF
-gpg --verbose --batch --gen-key .gnupg/foo
-gpg --armor --export-secret-keys > ${PRIVKEY}
-gpg --armor --export > ${PUBKEY}
+gpg --homedir ${TEMPDIR} --verbose --batch --gen-key gpgbatch
+gpg --homedir ${TEMPDIR} --armor --export-secret-keys > ${PRIVKEY}
+gpg --homedir ${TEMPDIR} --armor --export > ${PUBKEY}
 popd
 
 rm -rf ${TEMPDIR}
