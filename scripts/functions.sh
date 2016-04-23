@@ -187,15 +187,12 @@ cat >gpgbatch <<EOF
     Name-Comment: ${REPOSITORY_NAME}
     Name-Email: ${REPOSITORY_NAME}@sabayon.org
     Expire-Date: 0
-    %pubring public.pub
-    %secring private.sec
-    # Do a commit here, so that we can later print "done" :-)
     %commit
     %echo done
 EOF
-gpg --homedir ${TEMPDIR} --verbose --batch --gen-key gpgbatch
-gpg --homedir ${TEMPDIR} --armor --export-secret-keys > ${PRIVKEY}
-gpg --homedir ${TEMPDIR} --armor --export > ${PUBKEY}
+gpg --no-tty --no-permission-warning --homedir .  --verbose --batch --gen-key gpgbatch 2>&1
+gpg --no-tty --no-permission-warning --homedir . --armor --export-secret-keys > ${PRIVKEY} 2>&1
+gpg --no-tty --no-permission-warning --homedir . --armor --export > ${PUBKEY} 2>&1
 popd
 
 rm -rf ${TEMPDIR}
