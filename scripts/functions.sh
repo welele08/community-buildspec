@@ -1,12 +1,5 @@
 #!/bin/bash
 
-
-EMAIL_NOTIFICATIONS="${EMAIL_NOTIFICATIONS:-mudler@sabayon.org}"
-MAILGUN_API_KEY="${MAILGUN_API_KEY}"
-MAILGUN_DOMAIN_NAME="${MAILGUN_DOMAIN_NAME}"
-MAILGUN_FROM="${MAILGUN_FROM:-Excited User <mailgun\@$MAILGUN_DOMAIN_NAME\>}"
-
-
 DOCKER_COMMIT_IMAGE=${DOCKER_COMMIT_IMAGE:-true}
 CHECK_BUILD_DIFFS=${CHECK_BUILD_DIFFS:-true}
 VAGRANT_DIR="${VAGRANT_DIR:-/vagrant}"
@@ -221,7 +214,7 @@ local NEW_BINHOST_MD5=$(mktemp -t "$(basename $0).XXXXXXXXXX")
 # Generate keys if not present
 export PRIVATEKEY="${PRIVATEKEY:-${VAGRANT_DIR}/confs/${REPOSITORY_NAME}.key}"
 export PUBKEY="${PUBKEY:-${VAGRANT_DIR}/confs/${REPOSITORY_NAME}.pub}"
-( [ ! -e ${PRIVATEKEY} ] || [ ! -e ${PUBKEY} ] ) && gen_gpg_keys "${REPOSITORY_NAME}" "${PRIVATEKEY}" "${PUBKEY}"
+( [ ! -f ${PRIVATEKEY} ] || [ ! -f ${PUBKEY} ] ) && gen_gpg_keys "${REPOSITORY_NAME}" "${PRIVATEKEY}" "${PUBKEY}"
 
 
 #we need to get rid of Packages during md5sum, it contains TIMESTAMP that gets updated on each build (and thus changes, also if the compiled files remains the same)
