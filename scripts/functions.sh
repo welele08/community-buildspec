@@ -19,6 +19,7 @@ export EMERGE_SPLIT_INSTALL=0 #by default don't split emerge installation
 #Irc configs, optional.
 export IRC_IDENT="${IRC_IDENT:-bot sabayon scr builder}"
 export IRC_NICK="${IRC_NICK:-SCRBuilder}"
+export DOCKERHUB_PUSH="${DOCKERHUB_PUSH:-0}"
 
 URI_BASE="${URI_BASE:-http://mirror.de.sabayon.org/community/}"
 
@@ -150,7 +151,14 @@ fi
 if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
   echo "[*] A tagged image already exists"
 else
-  docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
+  if [ "$DOCKERHUB_PUSH" -eq 1 ]; then
+    echo "[*] Image doesn't exists, fetching from DockerHub!"
+    docker pull "$DOCKER_TAGGED_IMAGE" || true # best-effort, trying twice for random networking problems.
+    docker pull "$DOCKER_TAGGED_IMAGE" || true
+  else
+    echo "[*] Image doesn't exists, creating from scratch!"
+    docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
+  fi
 fi
 }
 
@@ -248,6 +256,8 @@ OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpa
 local BUILD_STATUS=$?
 [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-build-${JOB_ID}" $DOCKER_BUILDER_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-build-${JOB_ID}"
 
+[ "$DOCKERHUB_PUSH" -eq 1 ] docker push $DOCKER_BUILDER_TAGGED_IMAGE
+
 if [ $BUILD_STATUS -eq 0 ]
 then
   echo "Build successfully"
@@ -283,6 +293,7 @@ export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
 # Create repository
 export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-eit-${JOB_ID}"
 PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+# Eit containers are cheap, not pushing to dockerhub.
 [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-eit-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-eit-${JOB_ID}"
 
 rm -rf $TEMPDIR
