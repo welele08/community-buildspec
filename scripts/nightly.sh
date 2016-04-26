@@ -14,7 +14,7 @@ update_vagrant_repo
 system_upgrade
 
 chmod -R 777 ${VAGRANT_DIR}/distfiles/
-env_parallel -P "${PARALLEL_JOBS}" automated_build ::: "${REPOSITORIES[@]}"
+env_parallel --bibtex -P "${PARALLEL_JOBS}" automated_build ::: "${REPOSITORIES[@]}"
 
 chmod 755 ${VAGRANT_DIR}/logs/
 generate_metadata
