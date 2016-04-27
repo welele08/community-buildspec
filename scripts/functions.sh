@@ -254,7 +254,7 @@ OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost" sabayon-buildpa
 local BUILD_STATUS=$?
 [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-build-${JOB_ID}" $DOCKER_BUILDER_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-build-${JOB_ID}"
 
-[ "$DOCKERHUB_PUSH" -eq 1 ] docker push $DOCKER_BUILDER_TAGGED_IMAGE &
+[ "$DOCKERHUB_PUSH" -eq 1 ] && docker push $DOCKER_BUILDER_TAGGED_IMAGE &
 
 if [ $BUILD_STATUS -eq 0 ]
 then
