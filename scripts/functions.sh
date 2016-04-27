@@ -151,10 +151,8 @@ fi
 if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
   echo "[*] A tagged image already exists"
 else
-  if [ "$DOCKERHUB_PUSH" -eq 1 ]; then
-    echo "[*] Image doesn't exists, fetching from DockerHub!"
-    docker pull "$DOCKER_TAGGED_IMAGE" || true # best-effort, trying twice for random networking problems.
-    docker pull "$DOCKER_TAGGED_IMAGE" || true
+  if [ "$DOCKERHUB_PUSH" -eq 1 ] && docker pull "$DOCKER_TAGGED_IMAGE"; then
+    echo "[*] Image didn't existed! Cache retrieved from dockerhub"
   else
     echo "[*] Image doesn't exists, creating from scratch!"
     docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
