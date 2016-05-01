@@ -14,14 +14,6 @@ if [ -n "${images}" ]; then
   docker rmi ${images}
 fi
 
-# Cleaning docker stuff with hands or eventually it will grow and eat up all the disk.
-# [ -n "${DOCKER_IMAGE}" ] && docker rmi -f ${DOCKER_IMAGE} || docker rmi -f sabayon/builder-amd64
-#
-systemctl stop docker
-rm -rf /var/lib/docker/*
-systemctl start docker
-#
-# [ -n "${DOCKER_IMAGE}" ] && docker pull ${DOCKER_IMAGE} || docker pull sabayon/builder-amd64
 
 # update crontab
 crontab ${VAGRANT_DIR}/confs/crontab
