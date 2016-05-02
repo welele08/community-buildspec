@@ -361,6 +361,8 @@ cat $YAML_FILE | shyaml get-value build.emerge.remote_overlay  &>/dev/null && ex
 cat $YAML_FILE | shyaml get-value build.equo.enman_self &>/dev/null && export ENMAN_ADD_SELF=$(cat $YAML_FILE | shyaml get-values build.equo.enman_self) # ENMAN_ADD_SELF, default 1.
 
 cat $YAML_FILE | shyaml get-value build.equo.repositories  &>/dev/null && export ENMAN_REPOSITORIES=$(cat $YAML_FILE | shyaml get-values build.equo.repositories) # ENMAN_REPOSITORIES
+cat $YAML_FILE | shyaml get-value build.equo.remove_repositories &>/dev/null && export REMOVE_ENMAN_REPOSITORIES=$(cat $YAML_FILE | shyaml get-values build.equo.remove_repositories) # REMOVE_ENMAN_REPOSITORIES
+
 cat $YAML_FILE | shyaml get-value build.equo.repository  &>/dev/null && export ENTROPY_REPOSITORY=$(cat $YAML_FILE | shyaml get-value build.equo.repository) # ENTROPY_REPOSITORY
 cat $YAML_FILE | shyaml get-value build.equo.dependency_install.enable  &>/dev/null && export USE_EQUO=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.enable) # USE_EQUO
 cat $YAML_FILE | shyaml get-value build.equo.dependency_install.install_atoms  &>/dev/null && export EQUO_INSTALL_ATOMS=$(cat $YAML_FILE | shyaml get-value build.equo.dependency_install.install_atoms) # EQUO_INSTALL_ATOMS
