@@ -20,6 +20,7 @@ export EMERGE_SPLIT_INSTALL=0 #by default don't split emerge installation
 export IRC_IDENT="${IRC_IDENT:-bot sabayon scr builder}"
 export IRC_NICK="${IRC_NICK:-SCRBuilder}"
 export DOCKERHUB_PUSH="${DOCKERHUB_PUSH:-0}"
+export ENMAN_ADD_SELF="${ENMAN_ADD_SELF:-0}"
 
 URI_BASE="${URI_BASE:-http://mirror.de.sabayon.org/community/}"
 
