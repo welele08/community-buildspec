@@ -5,7 +5,15 @@
 
 update_vagrant_repo
 
-# XXX: We should use docker-companion squash for each image here.
+IMAGES=( $(docker images | awk '{ print $1 }' | grep -v "REPOSITORY") )
+for i in "${IMAGES[@]}"
+do
+if [ -n "${i}" ]; then
+  docker-companion squash ${i} ${i}
+fi
+done
 
-rm -rfv /tmp/.*		
+docker_clean
+
+rm -rfv /tmp/.*
 rm -rfv /tmp/*
