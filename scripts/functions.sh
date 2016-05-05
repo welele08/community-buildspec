@@ -4,7 +4,8 @@ DOCKER_COMMIT_IMAGE=${DOCKER_COMMIT_IMAGE:-true}
 CHECK_BUILD_DIFFS=${CHECK_BUILD_DIFFS:-true}
 VAGRANT_DIR="${VAGRANT_DIR:-/vagrant}"
 
-export DOCKER_OPTS="${DOCKER_OPTS:--t}" # Remember to set --rm if DOCKER_COMMIT_IMAGE: false
+export ENTRYPOINT="${ENTRYPOINT:---entrypoint /usr/sbin/builder}"
+export DOCKER_OPTS="${DOCKER_OPTS:--t $ENTRYPOINT}" # Remember to set --rm if DOCKER_COMMIT_IMAGE: false
 export DISTFILES="${VAGRANT_DIR}/distfiles"
 export ENTROPY_DOWNLOADED_PACKAGES="${VAGRANT_DIR}/entropycache"
 export DOCKER_EIT_IMAGE="${DOCKER_EIT_IMAGE:-sabayon/eit-amd64}"
@@ -20,11 +21,10 @@ export EMERGE_SPLIT_INSTALL=0 #by default don't split emerge installation
 export IRC_IDENT="${IRC_IDENT:-bot sabayon scr builder}"
 export IRC_NICK="${IRC_NICK:-SCRBuilder}"
 export DOCKERHUB_PUSH="${DOCKERHUB_PUSH:-0}"
-export ENMAN_ADD_SELF="${ENMAN_ADD_SELF:-0}"
 
 URI_BASE="${URI_BASE:-http://mirror.de.sabayon.org/community/}"
 
-[ "$DOCKER_COMMIT_IMAGE" = true ]  && export DOCKER_OPTS="-t"
+[ "$DOCKER_COMMIT_IMAGE" = true ]  && export DOCKER_OPTS="-t $ENTRYPOINT"
 [ -e ${VAGRANT_DIR}/confs/env ] && . ${VAGRANT_DIR}/confs/env
 
 if [ "$DOCKER_COMMIT_IMAGE" = true ]; then
@@ -307,7 +307,14 @@ build_clean
 purge_old_packages
 [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean-${JOB_ID}"
 # Deploy repository inside "repositories"
-deploy_all "${REPOSITORY_NAME}"
+deploy_all "${REPOSITORY_NAME}"images=($(docker images | tr -s ' ' | cut -d ' ' -f 1))
+
+for i in "${images}"
+do
+if [ -n "${i}" ]; then
+  echo ${i}
+fi
+done
 unset DOCKER_IMAGE
 unset DOCKER_OPTS
 }
