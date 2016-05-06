@@ -307,14 +307,7 @@ build_clean
 purge_old_packages
 [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean-${JOB_ID}"
 # Deploy repository inside "repositories"
-deploy_all "${REPOSITORY_NAME}"images=($(docker images | tr -s ' ' | cut -d ' ' -f 1))
-
-for i in "${images}"
-do
-if [ -n "${i}" ]; then
-  echo ${i}
-fi
-done
+deploy_all "${REPOSITORY_NAME}"
 unset DOCKER_IMAGE
 unset DOCKER_OPTS
 }
