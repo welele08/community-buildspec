@@ -356,9 +356,8 @@ cat $YAML_FILE | shyaml get-value build.emerge.jobs  &>/dev/null && export BUILD
 cat $YAML_FILE | shyaml get-value build.emerge.preserved_rebuild  &>/dev/null && export PRESERVED_REBUILD=$(cat $YAML_FILE | shyaml get-value build.emerge.preserved_rebuild) # PRESERVED_REBUILD
 cat $YAML_FILE | shyaml get-value build.emerge.skip_sync  &>/dev/null && export SKIP_PORTAGE_SYNC=$(cat $YAML_FILE | shyaml get-value build.emerge.skip_sync) # SKIP_PORTAGE_SYNC
 cat $YAML_FILE | shyaml get-value build.emerge.webrsync  &>/dev/null && export WEBRSYNC=$(cat $YAML_FILE | shyaml get-value build.emerge.webrsync) # WEBRSYNC
-cat $YAML_FILE | shyaml get-value build.emerge.remote_overlay  &>/dev/null && export REMOTE_OVERLAY=$(cat $YAML_FILE | shyaml get-value build.emerge.remote_overlay) # REMOTE_OVERLAY
 cat $YAML_FILE | shyaml get-values build.emerge.remove &>/dev/null && EMERGE_REMOVE="$(cat $YAML_FILE | shyaml get-values build.emerge.remove | xargs echo)"
-
+cat $YAML_FILE | shyaml get-values build.emerge.remote_overlay &>/dev/null && REMOTE_OVERLAY="$(cat $YAML_FILE | shyaml get-values build.emerge.remote_overlay | xargs echo)"
 
 cat $YAML_FILE | shyaml get-value build.equo.enman_self &>/dev/null && export ENMAN_ADD_SELF=$(cat $YAML_FILE | shyaml get-values build.equo.enman_self) # ENMAN_ADD_SELF, default 1.
 
