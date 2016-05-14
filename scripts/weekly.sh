@@ -9,7 +9,7 @@ IMAGES=( $(docker images | awk '{ print $1 }' | grep -v "REPOSITORY") )
 for i in "${IMAGES[@]}"
 do
 if [ -n "${i}" ]; then
-  docker-companion squash ${i} ${i}
+  docker-companion squash --remove ${i}
 fi
 done
 
