@@ -15,5 +15,7 @@ done
 
 docker_clean
 
+EMERGE_DEFAULTS_ARGS="--accept-properties=-interactive -t --verbose --update --nospinner --oneshot --complete-graph --buildpkg" /vagrant/scripts/nightly.sh
+
 rm -rfv /tmp/.*
 rm -rfv /tmp/*
