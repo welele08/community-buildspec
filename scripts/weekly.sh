@@ -15,6 +15,7 @@ done
 
 docker_clean
 
+# Execute a nightly with default args that makes sure we compile the whole tree. Diffs checks in functions.sh will prevent useless revbumps anyway
 EMERGE_DEFAULTS_ARGS="--accept-properties=-interactive -t --verbose --update --nospinner --oneshot --complete-graph --buildpkg" /vagrant/scripts/nightly.sh
 
 rm -rfv /tmp/.*
