@@ -361,6 +361,8 @@ cat $YAML_FILE | shyaml get-values build.emerge.remote_overlay &>/dev/null && ex
 cat $YAML_FILE | shyaml get-values build.emerge.remove_remote_overlay &>/dev/null && export REMOVE_REMOTE_OVERLAY="$(cat $YAML_FILE | shyaml get-values build.emerge.remove_remote_overlay | xargs echo)"
 cat $YAML_FILE | shyaml get-values build.emerge.remove_layman_overlay &>/dev/null && export REMOVE_LAYMAN_OVERLAY="$(cat $YAML_FILE | shyaml get-values build.emerge.remove_layman_overlay | xargs echo)"
 
+cat $YAML_FILE | shyaml get-value build.qa_checks &>/dev/null && export QA_CHECKS=$(cat $YAML_FILE | shyaml get-values build.qa_checks) # QA_CHECKS, default 1.
+
 cat $YAML_FILE | shyaml get-value build.equo.enman_self &>/dev/null && export ENMAN_ADD_SELF=$(cat $YAML_FILE | shyaml get-values build.equo.enman_self) # ENMAN_ADD_SELF, default 1.
 
 cat $YAML_FILE | shyaml get-value build.equo.repositories  &>/dev/null && export ENMAN_REPOSITORIES=$(cat $YAML_FILE | shyaml get-values build.equo.repositories) # ENMAN_REPOSITORIES
