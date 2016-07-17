@@ -2,7 +2,13 @@
 
 DOCKER_COMMIT_IMAGE=${DOCKER_COMMIT_IMAGE:-true}
 CHECK_BUILD_DIFFS=${CHECK_BUILD_DIFFS:-true}
+
 VAGRANT_DIR="${VAGRANT_DIR:-/vagrant}"
+
+export DEPLOY_PHASE=${DEPLOY_PHASE:-false}
+export CREATEREPO_PHASE=${CREATEREPO_PHASE:-true}
+export GENMETADATA_PHASE=${GENMETADATA_PHASE:-true}
+export CLEAN_PHASE=${CLEAN_PHASE:-true}
 
 export ENTRYPOINT="${ENTRYPOINT:---entrypoint /usr/sbin/builder}"
 export DOCKER_OPTS="${DOCKER_OPTS:--t $ENTRYPOINT}" # Remember to set --rm if DOCKER_COMMIT_IMAGE: false
@@ -268,7 +274,7 @@ fi
 
 # Checking diffs
 if [ "$CHECK_BUILD_DIFFS" = true ]; then
-
+  echo "*** Checking tbz2 diffs ***"
   # let's do the hash of the tbz2 without xpak data
   packages_hash $VAGRANT_DIR $REPOSITORY_NAME $NEW_BINHOST_MD5
 
@@ -287,27 +293,39 @@ else
   cp -rf ${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}-binhost/* $TEMPDIR
 fi
 
-# Preparing Eit image.
-export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
-# Create repository
-export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-eit-${JOB_ID}"
-PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
-# Eit containers are cheap, not pushing to dockerhub.
-[ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-eit-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-eit-${JOB_ID}"
+if [ "$CREATEREPO_PHASE" = true ]; then
+  echo "*** Generating repository ***"
+  # Preparing Eit image.
+  export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
+  # Create repository
+  export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-eit-${JOB_ID}"
+  PORTAGE_ARTIFACTS="$TEMPDIR" OUTPUT_DIR="${VAGRANT_DIR}/artifacts/${REPOSITORY_NAME}" sabayon-createrepo
+  # Eit containers are cheap, not pushing to dockerhub.
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-eit-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-eit-${JOB_ID}"
+fi
 
 rm -rf $TEMPDIR
 [ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
 
 # Generating metadata
-generate_repository_metadata
-# Cleanup - old cruft/Maintenance
-export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-clean-${JOB_ID}"
-build_clean
-[ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean-${JOB_ID}"
-purge_old_packages
-[ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean-${JOB_ID}"
-# Deploy repository inside "repositories"
-deploy_all "${REPOSITORY_NAME}"
+[ "$GENMETADATA_PHASE" = true ] && generate_repository_metadata
+
+if [ "$CLEAN_PHASE" = true ]; then
+  echo "*** Cleanup cruft from repository ***"
+  # Cleanup - old cruft/Maintenance
+  export DOCKER_OPTS="${DOCKER_USER_OPTS} --name ${REPOSITORY_NAME}-clean-${JOB_ID}"
+  build_clean
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean-${JOB_ID}"
+  purge_old_packages
+  [ "$DOCKER_COMMIT_IMAGE" = true ] && docker commit "${REPOSITORY_NAME}-clean-${JOB_ID}" $DOCKER_EIT_TAGGED_IMAGE && docker rm -f "${REPOSITORY_NAME}-clean-${JOB_ID}"
+fi
+
+if [ "$DEPLOY_PHASE" = true ]; then
+  echo "*** Deploying artifacts/logs from the build ***"
+  # Deploy repository inside "repositories"
+  deploy_all "${REPOSITORY_NAME}"
+fi
+
 unset DOCKER_IMAGE
 unset DOCKER_OPTS
 }
