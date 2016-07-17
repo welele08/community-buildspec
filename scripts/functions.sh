@@ -237,8 +237,8 @@ export PUBKEY="${PUBKEY:-${VAGRANT_DIR}/confs/${REPOSITORY_NAME}.pub}"
 
 # Remove packages. maintainance first.
 # Sets the docker image that we will use from now on
-get_image $DOCKER_EIT_IMAGE $DOCKER_EIT_TAGGED_IMAGE
-[ "$CREATEREPO_PHASE" = true ] && get_image $DOCKER_BUILDER_IMAGE $DOCKER_BUILDER_TAGGED_IMAGE
+get_image $DOCKER_BUILDER_IMAGE $DOCKER_BUILDER_TAGGED_IMAGE
+[ "$CREATEREPO_PHASE" = true ] && get_image $DOCKER_EIT_IMAGE $DOCKER_EIT_TAGGED_IMAGE
 
 export DOCKER_IMAGE=$DOCKER_EIT_TAGGED_IMAGE
 
