@@ -150,18 +150,18 @@ local DOCKER_IMAGE="${1}"
 local DOCKER_TAGGED_IMAGE="${2}"
 
 if docker images | grep -q "$DOCKER_IMAGE"; then
-  echo "[*] The base image exists"
+  echo "[*] The base image '$DOCKER_IMAGE' exists"
 else
   docker pull "$DOCKER_IMAGE"
 fi
 
 if docker images | grep -q "$DOCKER_TAGGED_IMAGE"; then
-  echo "[*] A tagged image already exists"
+  echo "[*] A tagged image '$DOCKER_TAGGED_IMAGE' already exists"
 else
   if [ "$DOCKERHUB_PUSH" -eq 1 ] && docker pull "$DOCKER_TAGGED_IMAGE"; then
-    echo "[*] Image didn't existed! Cache retrieved from dockerhub"
+    echo "[*] Image '$DOCKER_TAGGED_IMAGE' didn't existed! Cache retrieved from dockerhub"
   else
-    echo "[*] Image doesn't exists, creating from scratch!"
+    echo "[*] Image '$DOCKER_TAGGED_IMAGE' doesn't exists, creating from scratch!"
     docker tag "$DOCKER_IMAGE" "$DOCKER_TAGGED_IMAGE"
   fi
 fi
