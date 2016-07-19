@@ -1,7 +1,6 @@
 #!/bin/bash
 
 DOCKER_COMMIT_IMAGE=${DOCKER_COMMIT_IMAGE:-true}
-CHECK_BUILD_DIFFS=${CHECK_BUILD_DIFFS:-true}
 
 VAGRANT_DIR="${VAGRANT_DIR:-/vagrant}"
 
@@ -9,6 +8,7 @@ export DEPLOY_PHASE=${DEPLOY_PHASE:-false}
 export CREATEREPO_PHASE=${CREATEREPO_PHASE:-true}
 export GENMETADATA_PHASE=${GENMETADATA_PHASE:-true}
 export CLEAN_PHASE=${CLEAN_PHASE:-true}
+export CHECK_BUILD_DIFFS=${CHECK_BUILD_DIFFS:-1}
 
 export ENTRYPOINT="${ENTRYPOINT:---entrypoint /usr/sbin/builder}"
 export DOCKER_OPTS="${DOCKER_OPTS:--t $ENTRYPOINT}" # Remember to set --rm if DOCKER_COMMIT_IMAGE: false
@@ -233,7 +233,7 @@ export PUBKEY="${PUBKEY:-${VAGRANT_DIR}/confs/${REPOSITORY_NAME}.pub}"
 #we need to get rid of Packages during md5sum, it contains TIMESTAMP that gets updated on each build (and thus changes, also if the compiled files remains the same)
 #here we are trying to see if there are diffs between the bins, not buy the metas.
 # let's do the hash of the tbz2 without xpak data
-[ "$CHECK_BUILD_DIFFS" = true ] && packages_hash $VAGRANT_DIR $REPOSITORY_NAME $OLD_BINHOST_MD5
+[ "$CHECK_BUILD_DIFFS" -eq 1 ] && packages_hash $VAGRANT_DIR $REPOSITORY_NAME $OLD_BINHOST_MD5
 
 # Remove packages. maintainance first.
 # Sets the docker image that we will use from now on
@@ -273,7 +273,7 @@ else
 fi
 
 # Checking diffs
-if [ "$CHECK_BUILD_DIFFS" = true ]; then
+if [ "$CHECK_BUILD_DIFFS" -eq 1 ]; then
   echo "*** Checking tbz2 diffs ***"
   # let's do the hash of the tbz2 without xpak data
   packages_hash $VAGRANT_DIR $REPOSITORY_NAME $NEW_BINHOST_MD5
@@ -305,7 +305,7 @@ if [ "$CREATEREPO_PHASE" = true ]; then
 fi
 
 rm -rf $TEMPDIR
-[ "$CHECK_BUILD_DIFFS" = true ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
+[ "$CHECK_BUILD_DIFFS" -eq 1 ] && rm -rf $OLD_BINHOST_MD5 $NEW_BINHOST_MD5
 
 # Generating metadata
 [ "$GENMETADATA_PHASE" = true ] && generate_repository_metadata
@@ -347,6 +347,7 @@ cat $YAML_FILE | shyaml get-value repository.description  &>/dev/null && export 
 cat $YAML_FILE | shyaml get-value repository.maintenance.keep_previous_versions  &>/dev/null && export KEEP_PREVIOUS_VERSIONS=$(cat $YAML_FILE | shyaml get-value repository.maintenance.keep_previous_versions) # KEEP_PREVIOUS_VERSIONS
 cat $YAML_FILE | shyaml get-values repository.maintenance.remove  &>/dev/null && export TOREMOVE="$(cat $YAML_FILE | shyaml get-values repository.maintenance.remove | xargs echo)" # replaces package_remove
 cat $YAML_FILE | shyaml get-value repository.maintenance.clean_cache  &>/dev/null && export CLEAN_CACHE=$(cat $YAML_FILE | shyaml get-value repository.maintenance.clean_cache) # CLEAN_CACHE
+cat $YAML_FILE | shyaml get-value repository.maintenance.check_diffs  &>/dev/null && export CHECK_BUILD_DIFFS=$(cat $YAML_FILE | shyaml get-value repository.maintenance.check_diffs) # CHECK_BUILD_DIFFS
 
 # recompose our BUILD_ARGS
 cat $YAML_FILE | shyaml get-values build.target &>/dev/null && BUILD_ARGS="$(cat $YAML_FILE | shyaml get-values build.target | xargs echo)"  #mixed toinstall BUILD_ARGS
