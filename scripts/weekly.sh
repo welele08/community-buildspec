@@ -1,7 +1,7 @@
 #!/bin/bash
 # written by mudler@sabayon.org
 
-. /vagrant/scripts/functions.sh
+. /sbin/sark-functions.sh
 
 update_vagrant_repo
 

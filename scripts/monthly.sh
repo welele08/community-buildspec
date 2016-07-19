@@ -1,6 +1,6 @@
 #!/bin/bash
 
-. /vagrant/scripts/functions.sh
+. /sbin/sark-functions.sh
 
 system_upgrade
 update_vagrant_repo

@@ -11,7 +11,7 @@ echo -5 | equo conf update
 equo i docker sabayon-devkit vixie-cron git wget curl ansifilter md5deep \
 dev-perl/JSON dev-perl/libwww-perl dev-python/pip \
 sys-fs/btrfs-progs sys-apps/util-linux net-analyzer/netcat6 \
-www-servers/nginx sys-process/parallel rng-tools docker-companion
+www-servers/nginx sys-process/parallel rng-tools docker-companion sabayon-sark
 
 pip install shyaml
 
