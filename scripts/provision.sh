@@ -11,7 +11,7 @@ echo -5 | equo conf update
 equo i docker sabayon-devkit vixie-cron git wget curl ansifilter md5deep \
 dev-perl/JSON dev-perl/libwww-perl dev-python/pip \
 sys-fs/btrfs-progs sys-apps/util-linux net-analyzer/netcat6 \
-www-servers/nginx sys-process/parallel rng-tools docker-companion sabayon-sark
+www-servers/nginx sys-process/parallel rng-tools docker-companion sabayon-sark app-misc/sabayon-auto-updater
 
 pip install shyaml
 
@@ -37,6 +37,8 @@ cp -rfv /vagrant/confs/rngd.service /usr/lib64/systemd/system/rngd.service
 sed -i 's:txt;:txt log;:g' /etc/nginx/mime.types
 
 systemctl daemon-reload
+systemctl enable sabayon-auto-updater.timer
+systemctl start sabayon-auto-updater.timer
 
 systemctl enable docker
 systemctl restart docker
