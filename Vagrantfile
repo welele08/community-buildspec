@@ -17,9 +17,9 @@ config.persistent_storage.size = 500000
 config.persistent_storage.format = false
 config.persistent_storage.use_lvm = false
 
-unless File.exist?(file_to_disk)
- config.vm.provision "shell", path: "scripts/provision_hd.sh"
-end
+#unless File.exist?(file_to_disk)
+config.vm.provision "shell", path: "scripts/provision_hd.sh"
+#end
 
 config.vm.provision "shell", path: "scripts/provision.sh"
 config.vm.provision "shell", run: "always", path: "scripts/provision_always.sh"
