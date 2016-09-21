@@ -1,6 +1,6 @@
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-file_to_disk='./docker_disk.vdi'
+file_to_disk='docker_disk.vdi'
 Vagrant.configure(2) do |config|
   config.vm.box = "Sabayon/spinbase-amd64"
   config.vm.provider "virtualbox" do |vb|

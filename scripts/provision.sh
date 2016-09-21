@@ -17,17 +17,17 @@ pip install shyaml
 
 
 # docker expects device mapper device and not lvm device. Do the conversion.
-eval $( lvs --nameprefixes --noheadings -o lv_name,kernel_major,kernel_minor vg-docker | while read line; do
-eval $line
-if [ "$LVM2_LV_NAME" = "datapool" ]; then
-echo POOL_DEVICE_PATH=/dev/mapper/$( cat /sys/dev/block/${LVM2_LV_KERNEL_MAJOR}:${LVM2_LV_KERNEL_MINOR}/dm/name )
-fi
-done )
+#eval $( lvs --nameprefixes --noheadings -o lv_name,kernel_major,kernel_minor vg-docker | while read line; do
+#eval $line
+#if [ "$LVM2_LV_NAME" = "datapool" ]; then
+#echo POOL_DEVICE_PATH=/dev/mapper/$( cat /sys/dev/block/${LVM2_LV_KERNEL_MAJOR}:${LVM2_LV_KERNEL_MINOR}/dm/name )
+#fi
+#done )
 
-mkdir /etc/systemd/system/docker.service.d/
+mkdir -p /etc/systemd/system/docker.service.d/
 echo "[Service]
 ExecStart=
-ExecStart=/usr/bin/docker daemon --storage-driver=devicemapper --storage-opt dm.thinpooldev=${POOL_DEVICE_PATH} --storage-opt dm.basesize=200G -H fd://
+ExecStart=/usr/bin/docker daemon --storage-driver=btrfs -H fd://
 " > /etc/systemd/system/docker.service.d/vagrant_mount.conf
 
 cp -rfv /vagrant/confs/rsyncd.conf /etc/rsyncd.conf

@@ -18,7 +18,7 @@ dd if=/dev/zero of=/dev/sdb bs=512 count=1 conv=notrunc
 
 # BTRFS
 sudo mkfs.btrfs -f /dev/sdb
-sudo mkdir /var/lib/docker
+sudo -p mkdir /var/lib/docker
 echo "/dev/sdb /var/lib/docker btrfs defaults 0 0" >> /etc/fstab
 sudo mount -a
 date > /etc/provision_env_disk_added_date
