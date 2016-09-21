@@ -1,4 +1,4 @@
 #!/bin/bash
-vgscan
-vgchange -a y
+#vgscan
+#vgchange -a y
 systemctl restart docker
