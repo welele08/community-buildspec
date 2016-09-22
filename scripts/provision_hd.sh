@@ -8,6 +8,10 @@ then
 echo "Provision runtime already done."
 exit 0
 fi
+
+equo up
+ACCEPT_LICENSE=* equo i sys-fs/btrfs-progs
+
 dd if=/dev/zero of=/dev/sdb bs=512 count=1 conv=notrunc
 #sudo pvcreate /dev/sdb
 #vgcreate vg-docker /dev/sdb
@@ -22,3 +26,6 @@ sudo mkdir -p /var/lib/docker
 echo "/dev/sdb /var/lib/docker btrfs defaults 0 0" >> /etc/fstab
 sudo mount -a
 date > /etc/provision_env_disk_added_date
+
+echo "Disc provisioned"
+exit 0
