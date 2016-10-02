@@ -1,6 +1,20 @@
+# Workspace
 .vagrant
+
+# Private data
+confs/*
+docker_disk.vdi
+
+# Generated and cached data
 artifacts
-confs/env
-confs/key.pub
-confs/private.key
+distfiles
+entropy_artifacts
+entropycache
+logs
+portage_artifacts
+portagecache
+
+# Child git clone
 repositories
+# For local testing
+local-repositories
