@@ -5,4 +5,4 @@ HOME=/
 
 1 0 * * * flock -x /tmp/.scr.lock -c /vagrant/scripts/nightly.sh
 5 18 1 * * flock -x /tmp/.scr.lock -c /vagrant/scripts/monthly.sh
-5 12 * * 6 flock -x /tmp/.scr.lock -c /vagrant/scripts/weekly.sh
+5 12 * * 2 flock -x /tmp/.scr.lock -c /vagrant/scripts/weekly.sh
