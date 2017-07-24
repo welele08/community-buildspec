@@ -24,11 +24,11 @@ pip install shyaml
 #fi
 #done )
 
-mkdir -p /etc/systemd/system/docker.service.d/
-echo "[Service]
-ExecStart=
-ExecStart=/usr/bin/docker daemon --storage-driver=btrfs -H fd://
-" > /etc/systemd/system/docker.service.d/vagrant_mount.conf
+#mkdir -p /etc/systemd/system/docker.service.d/
+#echo "[Service]
+#ExecStart=
+#ExecStart=/usr/bin/docker daemon --storage-driver=btrfs -H fd://
+#" > /etc/systemd/system/docker.service.d/vagrant_mount.conf
 
 cp -rfv /vagrant/confs/rsyncd.conf /etc/rsyncd.conf
 cp -rfv /vagrant/confs/nginx.conf /etc/nginx/nginx.conf
