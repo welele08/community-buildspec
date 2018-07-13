@@ -59,7 +59,7 @@ systemctl enable lvm2-monitor.service
 crontab /vagrant/confs/crontab
 [ ! -d /vagrant/repositories ] && git clone https://github.com/Sabayon/community-repositories.git /vagrant/repositories
 [ ! -d /vagrant/artifacts ] && mkdir -p /vagrant/artifacts
-[ ! -d /vagrant/logs ] && mkdir -p /vagrant/artifacts
+[ ! -d /vagrant/logs ] && mkdir -p /vagrant/logs
 [ -d /vagrant/artifacts ] && chown -R nginx /vagrant/artifacts && chmod -R 755 /vagrant/artifacts
 [ -d /vagrant/logs ] && chown -R nginx /vagrant/logs && chmod -R 755 /vagrant/logs
 
