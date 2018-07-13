@@ -1,7 +1,7 @@
 #!/bin/bash
 # written by mudler@sabayon.org
 
-. /sbin/sark-functions.sh
+. /vagrant/repositories/sark-functions.sh
 
 export DEPLOY_SERVER
 export DEPLOY_PORT
