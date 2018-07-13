@@ -18,6 +18,10 @@ chmod -R 755 ${VAGRANT_DIR}/logs/$NOW
 
     chmod -R 777 ${VAGRANT_DIR}/distfiles/
     env_parallel -P "${PARALLEL_JOBS}" automated_build ::: "${REPOSITORIES[@]}"
+    for rep in ${REPOSITORIES[@]}
+    do
+	rsync -avPz --delete -e "ssh -q" /vagrant/artifacts/$rep osmc@avril-simonet.hd.free.fr:/repo
+    done
 
     chmod 755 ${VAGRANT_DIR}/logs/
     generate_metadata
