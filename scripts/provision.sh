@@ -12,7 +12,7 @@ equo i docker sabayon-devkit vixie-cron git wget curl ansifilter md5deep \
 dev-perl/JSON dev-perl/libwww-perl dev-python/pip \
 sys-fs/btrfs-progs sys-apps/util-linux net-analyzer/netcat6 \
 www-servers/nginx sys-process/parallel rng-tools docker-companion sabayon-sark app-misc/sabayon-auto-updater
-
+cp /vagrant/scripts/sabayon-createrepo /usr/bin/
 
 # docker expects device mapper device and not lvm device. Do the conversion.
 #eval $( lvs --nameprefixes --noheadings -o lv_name,kernel_major,kernel_minor vg-docker | while read line; do
