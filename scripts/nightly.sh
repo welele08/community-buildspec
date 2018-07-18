@@ -17,6 +17,8 @@ chmod -R 755 ${VAGRANT_DIR}/logs/$NOW
     system_upgrade
 
     chmod -R 777 ${VAGRANT_DIR}/distfiles/
+    echo "env_parallel -P \"${PARALLEL_JOBS}\" automated_build ::: \"${REPOSITORIES[@]}\" " >> ${VAGRANT_DIR}/logs/$NOW/debug.log
+    
     env_parallel -P "${PARALLEL_JOBS}" automated_build ::: "${REPOSITORIES[@]}"
     for rep in ${REPOSITORIES[@]}
     do
