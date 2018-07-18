@@ -6,8 +6,8 @@ Vagrant.configure(2) do |config|
   config.vm.provider "virtualbox" do |vb|
     # Display the VirtualBox GUI when booting the machine
      vb.gui = false
-     vb.memory = "6096"
-     vb.cpus = 3
+     vb.memory = "16384"
+     vb.cpus = 12
      vb.customize ["modifyvm", :id, "--ioapic", "on"]
   end
 
