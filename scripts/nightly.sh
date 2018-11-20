@@ -2,7 +2,7 @@
 # written by mudler@sabayon.org
 
 . /vagrant/repositories/sark-functions.sh
-
+export PORTAGE_CACHE=/usr/portage
 export DEPLOY_SERVER
 export DEPLOY_PORT
 export DOCKER_PULL_IMAGE=0
